@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <!-- تنظیمات اتصال به دیتابیس -->
+        <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/food_delivery</property>
+        <property name="hibernate.connection.username">root</property>
+        <property name="hibernate.connection.password">your_password</property>
+
+        <!-- تنظیمات دیالکت و نمایش SQL -->
+        <property name="hibernate.dialect">org.hibernate.dialect.MySQL8Dialect</property>
+        <property name="hibernate.show_sql">true</property>
+        <property name="hibernate.hbm2ddl.auto">update</property> <!-- ایجاد/آپدیت خودکار جداول -->
+
+        <!-- تعیین کلاس‌های Entity -->
+<!--        <mapping class="com.fooddelivery.model.User"/>-->
+<!--        <mapping class="com.fooddelivery.model.Restaurant"/>-->
+<!--        <mapping class="com.fooddelivery.model.MenuItem"/>-->
+    </session-factory>
+</hibernate-configuration>
