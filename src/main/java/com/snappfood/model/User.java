@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.HashSet;
 
 enum Role{
     buyer,
@@ -49,6 +50,18 @@ public class User {
     @Column(nullable = false)
     private String accountNumber;
 
+    //TODO : CART
+
+    //TODO : ORDER HISTORY
+
+    @ManyToMany
+    @JoinTable(
+            name = "favorite restaurants",
+            joinColumns = @JoinColumn(name = "userId"),
+            inverseJoinColumns = @JoinColumn(name = "restaurantId")
+    )
+    private HashSet<Restaurant> favoriteRestaurants;
+
     @Embedded
-    private Delivery delivery;//for non couriers it'll always be null
+    private DeliveryOrders delivery;//for non couriers it'll always be null
 }

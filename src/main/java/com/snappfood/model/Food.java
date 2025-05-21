@@ -7,12 +7,11 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "restaurants")
+@Table(name = "foods")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
-public class Restaurant {
+public class Food {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
@@ -21,14 +20,14 @@ public class Restaurant {
     private String name;
 
     @Column(nullable = false)
-    private String address;
+    private String description;
 
     @Column(nullable = false)
-    private String phone;
+    private int price;
 
     @Column(nullable = false)
-    private String logo;
+    private int credit;
 
-    @Column
-    private int rating;
+    @Embedded
+    private FoodCategory category;
 }

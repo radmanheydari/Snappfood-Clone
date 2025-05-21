@@ -1,5 +1,4 @@
 package com.snappfood.model;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,28 +6,15 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "restaurants")
+@Table(name = "foodcategories")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
-public class Restaurant {
+public class FoodCategory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
 
     @Column(nullable = false)
     private String name;
-
-    @Column(nullable = false)
-    private String address;
-
-    @Column(nullable = false)
-    private String phone;
-
-    @Column(nullable = false)
-    private String logo;
-
-    @Column
-    private int rating;
 }
