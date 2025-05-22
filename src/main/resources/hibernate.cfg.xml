@@ -16,8 +16,10 @@
         <property name="hibernate.hbm2ddl.auto">update</property> <!-- ایجاد/آپدیت خودکار جداول -->
 
         <!-- تعیین کلاس‌های Entity -->
-<!--        <mapping class="com.fooddelivery.model.User"/>-->
-<!--        <mapping class="com.fooddelivery.model.Restaurant"/>-->
-<!--        <mapping class="com.fooddelivery.model.MenuItem"/>-->
+        <mapping class="com.snappfood.model.User"/>
+        <mapping class="com.snappfood.model.Restaurant"/>
+        <mapping class="com.snappfood.model.Food"/>
+        <mapping class="com.snappfood.model.DeliveryOrders"/>
+        <mapping class="com.snappfood.model.FoodCategory"/>
     </session-factory>
 </hibernate-configuration>
