@@ -6,6 +6,9 @@ import javax.persistence.*;
 @Embeddable
 @Data
 public class DeliveryOrders {
+    @Column
+    private int orderId;
+
     @Column(name = "delivery_status")
     private String status;
 
