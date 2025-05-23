@@ -14,7 +14,7 @@ import javax.persistence.*;
 public class Food {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    private Long id;
 
     @Column(nullable = false)
     private String name;
@@ -26,8 +26,9 @@ public class Food {
     private int price;
 
     @Column(nullable = false)
-    private int credit;
+    private int supply;
 
-    @Embedded
+    @ManyToOne
+    @JoinColumn(name = "categoryId")
     private FoodCategory category;
 }

@@ -15,9 +15,10 @@ import javax.persistence.*;
 public class Restaurant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    private Long id;
 
-    @Embedded
+    @ManyToOne
+    @JoinColumn(name = "ownerId")
     private User owner;
 
     @Column(nullable = false)

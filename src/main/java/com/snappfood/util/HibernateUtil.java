@@ -7,33 +7,26 @@ import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
 public class HibernateUtil {
-    private static final SessionFactory sessionFactory = buildSessionFactory();
+    private static final SessionFactory sessionFactory;
 
-    private static SessionFactory buildSessionFactory() {
+    static {
         try {
             StandardServiceRegistry standardRegistry = new StandardServiceRegistryBuilder()
-                    .configure("hibernate.cfg.xml")
+                    .configure()
                     .build();
 
             Metadata metadata = new MetadataSources(standardRegistry)
                     .getMetadataBuilder()
                     .build();
 
-            return metadata.getSessionFactoryBuilder().build();
-
+            sessionFactory = metadata.getSessionFactoryBuilder().build();
         } catch (Throwable ex) {
-            System.err.println("خطا در ایجاد SessionFactory: " + ex);
+            System.err.println("Initial SessionFactory creation failed: " + ex);
             throw new ExceptionInInitializerError(ex);
         }
     }
 
     public static SessionFactory getSessionFactory() {
         return sessionFactory;
-    }
-
-    public static void shutdown() {
-        if (sessionFactory != null) {
-            sessionFactory.close();
-        }
     }
 }

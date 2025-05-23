@@ -6,14 +6,17 @@
     <session-factory>
         <!-- تنظیمات اتصال به دیتابیس -->
         <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
-        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/food_delivery</property>
+        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/snappfood</property>
         <property name="hibernate.connection.username">root</property>
-        <property name="hibernate.connection.password">your_password</property>
+        <property name="hibernate.connection.password">Radman1385</property>
 
         <!-- تنظیمات دیالکت و نمایش SQL -->
         <property name="hibernate.dialect">org.hibernate.dialect.MySQL8Dialect</property>
         <property name="hibernate.show_sql">true</property>
         <property name="hibernate.hbm2ddl.auto">update</property> <!-- ایجاد/آپدیت خودکار جداول -->
+
+        <!-- نمایش کوئری‌های SQL به صورت فرمت شده -->
+        <property name="hibernate.format_sql">true</property>
 
         <!-- تعیین کلاس‌های Entity -->
         <mapping class="com.snappfood.model.User"/>
@@ -21,5 +24,6 @@
         <mapping class="com.snappfood.model.Food"/>
         <mapping class="com.snappfood.model.DeliveryOrders"/>
         <mapping class="com.snappfood.model.FoodCategory"/>
+        <mapping class="com.snappfood.model.DeliveryOrders"/>
     </session-factory>
 </hibernate-configuration>

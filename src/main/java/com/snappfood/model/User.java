@@ -1,30 +1,23 @@
 package com.snappfood.model;
 
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.Data;
+import com.snappfood.Role;
+import lombok.*;
 
 import javax.persistence.*;
-import java.util.HashSet;
-
-enum Role{
-    buyer,
-    seller,
-    courier
-    //FIXME : ADMIN?
-}
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Embeddable
+
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    private Long id;
 
     @Column(nullable = false)
     private String fullname;
@@ -36,13 +29,12 @@ public class User {
     private String phone;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private Role role;
 
     @Column(nullable = false)
     private String address;
 
-    @Column(nullable = false)
+    @Column
     private String profilePicture;
 
     @Column(nullable = false)
@@ -57,11 +49,11 @@ public class User {
 
     @ManyToMany
     @JoinTable(
-            name = "favorite restaurants",
+            name = "user_favorite_restaurants",
             joinColumns = @JoinColumn(name = "userId"),
             inverseJoinColumns = @JoinColumn(name = "restaurantId")
     )
-    private HashSet<Restaurant> favoriteRestaurants;
+    private Set<Restaurant> favoriteRestaurants;
 
     @Embedded
     private DeliveryOrders delivery;//for non couriers it'll always be null
