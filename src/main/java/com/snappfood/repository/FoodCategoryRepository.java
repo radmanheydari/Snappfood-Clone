@@ -1,6 +1,5 @@
 package com.snappfood.repository;
 
-import com.snappfood.repository.FoodCategory;
 import com.snappfood.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -8,9 +7,9 @@ import org.hibernate.Transaction;
 import java.util.List;
 import java.util.Optional;
 
-public class FoodCategory {
+public class FoodCategoryRepository {
 
-    public FoodCategory save(FoodCategory foodcategory) {
+    public FoodCategoryRepository save(FoodCategoryRepository foodcategory) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Transaction transaction = session.beginTransaction();
             session.save(foodcategory);
@@ -19,19 +18,19 @@ public class FoodCategory {
         }
     }
 
-    public List<FoodCategory> findAll() {
+    public List<FoodCategoryRepository> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("FROM FoodCategory", FoodCategory.class).list();
+            return session.createQuery("FROM FoodCategory", FoodCategoryRepository.class).list();
         }
     }
 
-    public Optional<FoodCategory> findById(Long id) {
+    public Optional<FoodCategoryRepository> findById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return Optional.ofNullable(session.get(FoodCategory.class, id));
+            return Optional.ofNullable(session.get(FoodCategoryRepository.class, id));
         }
     }
 
-    public FoodCategory update(FoodCategory foodcategory) {
+    public FoodCategoryRepository update(FoodCategoryRepository foodcategory) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Transaction transaction = session.beginTransaction();
             session.update(foodcategory);
@@ -43,7 +42,7 @@ public class FoodCategory {
     public void delete(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Transaction transaction = session.beginTransaction();
-            FoodCategory foodcategory = session.get(FoodCategory.class, id);
+            FoodCategoryRepository foodcategory = session.get(FoodCategoryRepository.class, id);
             if (foodcategory != null) {
                 session.delete(foodcategory);
             }
