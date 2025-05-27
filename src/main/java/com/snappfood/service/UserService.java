@@ -2,27 +2,34 @@ package com.snappfood.service;
 
 import com.snappfood.model.User;
 import com.snappfood.repository.UserRepository;
-import java.util.List;
-import java.util.Optional;
 
 public class UserService {
+    private final UserRepository userRepository;
 
-    private final UserRepository userRepository = new UserRepository();
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
-    public User createUser(User user) {
+    public User register(User user) {
+        if (user.getEmail() == null || user.getEmail().isEmpty()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+        if (userRepository.existsByEmail(user.getEmail())) {
+            throw new IllegalArgumentException("Email already exists");
+        }
         return userRepository.save(user);
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public User getUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
-    public Optional<User> getUserById(Long id) {
-        return userRepository.findById(id);
-    }
-
-    public User updateUser(User user) {
-        return userRepository.update(user);
+    public User updateUser(Long id, User updatedUser) {
+        User existingUser = getUserById(id);
+        existingUser.setFullname(updatedUser.getFullname());
+        existingUser.setPhone(updatedUser.getPhone());
+        return userRepository.save(existingUser);
     }
 
     public void deleteUser(Long id) {

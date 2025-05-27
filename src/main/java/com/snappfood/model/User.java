@@ -3,6 +3,7 @@ package com.snappfood.model;
 
 import com.snappfood.Role;
 import lombok.*;
+import org.hibernate.annotations.CollectionId;
 
 import javax.persistence.*;
 import java.util.Set;
@@ -17,7 +18,7 @@ import java.util.Set;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @Column(nullable = false)
     private String fullname;
@@ -27,6 +28,9 @@ public class User {
 
     @Column(nullable = false)
     private String phone;
+
+    @Column(nullable = false, unique = true)
+    private String email;
 
     @Enumerated(EnumType.STRING)
     private Role role;

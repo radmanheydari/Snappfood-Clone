@@ -7,7 +7,7 @@ import javax.persistence.*;
 @Data
 public class DeliveryOrders {
     @Column
-    private int orderId;
+    private Long orderId;
 
     @Column(name = "delivery_status")
     private String status;
