@@ -28,7 +28,7 @@ public class RegisterHandler implements HttpHandler {
             String password = userData.get("password");
             String role = userData.get("role");
             String address = userData.get("address");
-            String profileImageBase64 = userData.get("profileImageBase64");
+            String profilePricture = userData.get("profilePricture");
             String bankName = userData.get("bankName");
             String accountNumber = userData.get("accountNumber");
 
@@ -53,7 +53,7 @@ public class RegisterHandler implements HttpHandler {
             user.setPassword(password);
             user.setRole(Role.valueOf(role));
             user.setAddress(address);
-            user.setProfilePicture(profileImageBase64);
+            user.setProfilePicture(profilePricture);
             user.setBankName(bankName);
             user.setAccountNumber(accountNumber);
 

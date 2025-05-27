@@ -38,7 +38,7 @@ public class User {
     @Column(nullable = false)
     private String address;
 
-    @Column
+    @Column(nullable = true)
     private String profilePicture;
 
     @Column(nullable = false)
