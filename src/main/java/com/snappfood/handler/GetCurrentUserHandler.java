@@ -1,9 +1,5 @@
 package com.snappfood.handler;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.InputStream;
-import java.util.Map;
 import com.google.gson.Gson;
 import com.snappfood.Role;
 import com.snappfood.model.User;
@@ -11,13 +7,18 @@ import com.snappfood.repository.UserRepository;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-public class RegisterHandler implements HttpHandler {
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Map;
+
+public class GetCurrentUserHandler implements HttpHandler {
     private final Gson gson = new Gson();
     private final UserRepository userRepository = new UserRepository();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        if ("POST".equals(exchange.getRequestMethod())) {
+        if ("GET".equals(exchange.getRequestMethod())) {
             InputStream is = exchange.getRequestBody();
             String requestBody = new String(is.readAllBytes());
             Map<String, String> userData = gson.fromJson(requestBody, Map.class);
@@ -57,9 +58,8 @@ public class RegisterHandler implements HttpHandler {
             user.setBankName(bankName);
             user.setAccountNumber(accountNumber);
 
-            User tmp = userRepository.save(user);
-            String response = String.format("{\\\"message\\\": \\\"User registered successfully\\\", \\\"userId\\\": %d}", tmp.getId());
-            sendResponse(exchange, 200, response);
+            userRepository.save(user);
+            sendResponse(exchange, 200, "User registered successfully");
         } else {
             sendResponse(exchange, 405, "Method not allowed");
         }

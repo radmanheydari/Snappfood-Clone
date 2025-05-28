@@ -72,6 +72,18 @@ public class UserRepository {
         }
     }
 
+    // یافتن کاربر بر اساس شماره تلفن
+    public Optional<User> findByPhone(String phone) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Query<User> query = session.createQuery(
+                    "FROM User u WHERE u.phone = :phone", User.class);
+            query.setParameter("phone", phone);
+            return Optional.ofNullable(query.uniqueResult());
+        } catch (Exception e) {
+            throw new RuntimeException("Error finding user by phone", e);
+        }
+    }
+
     // دریافت تمام کاربران
     public List<User> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

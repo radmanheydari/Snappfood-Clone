@@ -1,6 +1,7 @@
 package com.snappfood.handler;
 
 import com.google.gson.Gson;
+import com.snappfood.dto.LoginDTO;
 import com.snappfood.model.User;
 import com.snappfood.repository.UserRepository;
 import com.sun.net.httpserver.HttpExchange;
@@ -9,6 +10,7 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class LoginHandler implements HttpHandler {
@@ -26,14 +28,24 @@ public class LoginHandler implements HttpHandler {
             String password = userData.get("password");
 
             if (phone == null || password == null) {
-                sendResponse(exchange, 400, "invalid input");
+                sendResponse(exchange, 400, "{\\\"error\\\": \\\"invalid input\\\"}");
+                return;
+            }
+            User user = userRepository.findByPhone(phone).get();
+            if(!user.getPassword().equals(password)){
+                sendResponse(exchange, 401, "{\\\"error\\\": \\\"unauthorized\\\"}");
                 return;
             }
 
+            LoginDTO response = new LoginDTO(
+                    true,
+                    "user logged in successfully",
+                    new LoginDTO.UserData(user)
+            );
+            sendSuccessResponse(exchange, 200, response);
 
-            sendResponse(exchange, 200, "User registered successfully");
         } else {
-            sendResponse(exchange, 405, "Method not allowed");
+            sendResponse(exchange, 405, "{\\\"error\\\": \\\"Method not allowed\\\"}");
         }
     }
 
@@ -42,5 +54,24 @@ public class LoginHandler implements HttpHandler {
         OutputStream os = exchange.getResponseBody();
         os.write(message.getBytes());
         os.close();
+    }
+
+    private void sendSuccessResponse(HttpExchange exchange, int statusCode, Object response)
+            throws IOException {
+
+        String json = gson.toJson(response);
+        sendJsonResponse(exchange, statusCode, json);
+    }
+
+    private void sendJsonResponse(HttpExchange exchange, int statusCode, String json)
+            throws IOException {
+
+        byte[] responseBytes = json.getBytes(StandardCharsets.UTF_8);
+        exchange.getResponseHeaders().set("Content-Type", "application/json");
+        exchange.sendResponseHeaders(statusCode, responseBytes.length);
+
+        try (OutputStream os = exchange.getResponseBody()) {
+            os.write(responseBytes);
+        }
     }
 }

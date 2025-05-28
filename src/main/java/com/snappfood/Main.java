@@ -1,6 +1,7 @@
 package com.snappfood;
 
 import com.google.gson.Gson;
+import com.snappfood.handler.LoginHandler;
 import com.snappfood.handler.RegisterHandler;
 import com.snappfood.model.User;
 import com.snappfood.repository.UserRepository;
@@ -17,6 +18,7 @@ public class Main {
         UserService userService = new UserService(userRepository);
         Gson gson = new Gson();
         server.createContext("/auth/register", new RegisterHandler());
+        server.createContext("/auth/login", new LoginHandler());
         server.start();
         System.out.println("Server running on port 8080");
     }
