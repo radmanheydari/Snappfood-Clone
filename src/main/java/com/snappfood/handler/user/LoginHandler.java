@@ -1,5 +1,7 @@
-package com.snappfood.handler;
+package com.snappfood.handler.user;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.google.gson.Gson;
 import com.snappfood.dto.LoginDTO;
 import com.snappfood.model.User;
@@ -11,11 +13,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
 import java.util.Map;
 
 public class LoginHandler implements HttpHandler {
     private final Gson gson = new Gson();
     private final UserRepository userRepository = new UserRepository();
+    private static final String APPLICATION_JSON = "application/json";
+    private static final String SECRET = "YOUR_SECRET_KEY";
+    private final   Algorithm algorithm = Algorithm.HMAC256(SECRET);
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -37,9 +43,25 @@ public class LoginHandler implements HttpHandler {
                 return;
             }
 
+            String token;
+            try {
+                Date now = new Date();
+                Date expiresAt = new Date(now.getTime() + 3600_000); // 1 hour expiration
+                token = JWT.create()
+                        .withSubject(String.valueOf(user.getId()))
+                        .withClaim("role", user.getRole().toString())
+                        .withIssuedAt(now)
+                        .withExpiresAt(expiresAt)
+                        .sign(algorithm);
+            } catch (Exception e) {
+                sendResponse(exchange, 500, "{\\\"error\\\": \\\"Internal Server Error\\\"}");
+                return;
+            }
+
+            exchange.getResponseHeaders().set("Authorization", "Bearer " + token);
             LoginDTO response = new LoginDTO(
-                    true,
                     "user logged in successfully",
+                    token,
                     new LoginDTO.UserData(user)
             );
             sendSuccessResponse(exchange, 200, response);

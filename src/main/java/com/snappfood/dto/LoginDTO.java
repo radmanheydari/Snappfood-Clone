@@ -4,13 +4,13 @@ import com.snappfood.Role;
 import com.snappfood.model.User;
 
 public class LoginDTO {
-    private boolean success;
     private String message;
+    private String token;
     private UserData user;
 
-    public LoginDTO(boolean success, String message, UserData user) {
-        this.success = success;
+    public LoginDTO(String message, String token, UserData user) {
         this.message = message;
+        this.token = token;
         this.user = user;
     }
 
@@ -51,7 +51,6 @@ public class LoginDTO {
     }
 
     // Getters
-    public boolean isSuccess() { return success; }
     public String getMessage() { return message; }
     public UserData getUser() { return user; }
 }

@@ -1,4 +1,4 @@
-package com.snappfood.handler;
+package com.snappfood.handler.user;
 
 import java.io.IOException;
 import java.io.OutputStream;
