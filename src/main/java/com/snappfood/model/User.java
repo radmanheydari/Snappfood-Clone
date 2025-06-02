@@ -3,7 +3,6 @@ package com.snappfood.model;
 
 import com.snappfood.Role;
 import lombok.*;
-import org.hibernate.annotations.CollectionId;
 
 import javax.persistence.*;
 import java.util.Set;
@@ -21,7 +20,7 @@ public class User {
     private Long id;
 
     @Column(nullable = false)
-    private String fullname;
+    private String full_name;
 
     @Column(nullable = false)
     private String password;
@@ -41,11 +40,8 @@ public class User {
     @Column(nullable = true)
     private String profilePicture;
 
-    @Column(nullable = false)
-    private String bankName;
-
-    @Column(nullable = false)
-    private String accountNumber;
+    @Embedded
+    private BankInfo bank_info;
 
     //TODO : CART
 

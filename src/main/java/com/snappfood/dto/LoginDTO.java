@@ -28,14 +28,14 @@ public class LoginDTO {
 
         public UserData(User user) {
             this.id = user.getId();
-            this.fullname = user.getFullname();
+            this.fullname = user.getFull_name();
             this.phone = user.getPhone();
             this.email = user.getEmail();
             this.role = user.getRole();
             this.address = user.getAddress();
             this.profilePicture = user.getProfilePicture();
-            this.bankName = user.getBankName();
-            this.accountNumber = user.getAccountNumber();
+            this.bankName = user.getBank_info().getBank_name();
+            this.accountNumber = user.getBank_info().getAccount_number();
         }
 
         // Getters
