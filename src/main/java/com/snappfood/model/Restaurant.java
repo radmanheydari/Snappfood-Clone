@@ -30,9 +30,12 @@ public class Restaurant {
     @Column(nullable = false)
     private String phone;
 
-    @Column(nullable = false)
-    private String logo;
+    @Column(nullable = true, columnDefinition = "TEXT")
+    private String logoBase64;
 
-    @Column
-    private int rating;
+    @Column(nullable = true)
+    private int tax_fee;
+
+    @Column(nullable = true)
+    private int additional_fee;
 }
