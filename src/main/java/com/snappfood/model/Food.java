@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "foods")
@@ -19,6 +20,9 @@ public class Food {
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = true)
+    private String imageBase64;
+
     @Column(nullable = false)
     private String description;
 
@@ -27,6 +31,14 @@ public class Food {
 
     @Column(nullable = false)
     private int supply;
+
+    @ElementCollection
+    @CollectionTable(
+            name = "keywords",
+            joinColumns = @JoinColumn(name = "food_id")
+    )
+    @Column(nullable = false)
+    private List<String> keywords;
 
     @ManyToOne
     @JoinColumn(name = "categoryId")
