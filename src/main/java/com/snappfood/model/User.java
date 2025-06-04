@@ -55,6 +55,6 @@ public class User {
     )
     private Set<Restaurant> favoriteRestaurants;
 
-    @Embedded
-    private Order delivery;//for non couriers it'll always be null
+//    @Embedded
+//    private Order delivery;//for non couriers it'll always be null
 }
