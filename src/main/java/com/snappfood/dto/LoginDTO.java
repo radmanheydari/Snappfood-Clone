@@ -1,6 +1,7 @@
 package com.snappfood.dto;
 
 import com.snappfood.Role;
+import com.snappfood.model.BankInfo;
 import com.snappfood.model.User;
 
 public class LoginDTO {
@@ -14,7 +15,6 @@ public class LoginDTO {
         this.user = user;
     }
 
-    // کلاس داخلی برای داده‌های کاربر
     public static class UserData {
         private final Long id;
         private final String fullname;
@@ -34,11 +34,17 @@ public class LoginDTO {
             this.role = user.getRole();
             this.address = user.getAddress();
             this.profilePicture = user.getProfilePicture();
-            this.bankName = user.getBank_info().getBank_name();
-            this.accountNumber = user.getBank_info().getAccount_number();
+
+            BankInfo bankInfo = user.getBank_info();
+            if (bankInfo != null) {
+                this.bankName = bankInfo.getBank_name();
+                this.accountNumber = bankInfo.getAccount_number();
+            } else {
+                this.bankName = null;
+                this.accountNumber = null;
+            }
         }
 
-        // Getters
         public Long getId() { return id; }
         public String getFullname() { return fullname; }
         public String getPhone() { return phone; }
@@ -50,7 +56,7 @@ public class LoginDTO {
         public String getAccountNumber() { return accountNumber; }
     }
 
-    // Getters
     public String getMessage() { return message; }
+    public String getToken() { return token; }
     public UserData getUser() { return user; }
 }

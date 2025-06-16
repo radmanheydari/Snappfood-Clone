@@ -89,10 +89,16 @@ public class RegisterHandler implements HttpHandler {
             );
             sendResponse(exchange, 200, responseJson);
 
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            String err = String.format("{\"error\":\"Internal server error: %s\"}", ex.getMessage());
-            sendResponse(exchange, 500, err);
+        } catch (Exception e) {
+            e.printStackTrace(); // اینو حتما بذار
+            try {
+                String response = "{\"error\":\"Internal server error\"}";
+                exchange.sendResponseHeaders(500, response.getBytes().length);
+                exchange.getResponseBody().write(response.getBytes());
+                exchange.getResponseBody().close();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
