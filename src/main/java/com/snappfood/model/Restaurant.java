@@ -30,7 +30,7 @@ public class Restaurant {
     @Column(nullable = false)
     private String phone;
 
-    @Column(nullable = true, columnDefinition = "TEXT")
+    @Column(nullable = true)
     private String logoBase64;
 
     @Column(nullable = true)

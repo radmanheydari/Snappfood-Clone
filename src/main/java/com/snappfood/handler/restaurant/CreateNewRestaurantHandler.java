@@ -1,5 +1,5 @@
 package com.snappfood.handler.restaurant;
-//FIXME : THERE'S SOMETHING WRONG I SHOULD REWRITE IT
+
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
@@ -26,7 +26,7 @@ import java.util.Optional;
 
 public class CreateNewRestaurantHandler implements HttpHandler {
     private static final String APPLICATION_JSON = "application/json";
-    private static final String SECRET = "YOUR_SECRET_KEY"; // ← حتماً یک مقدار واقعی قرار دهید
+    private static final String SECRET = "YOUR_SECRET_KEY";
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final Gson gson = new Gson();
@@ -36,13 +36,12 @@ public class CreateNewRestaurantHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        // فقط متد POST پذیرفته می‌شود
         if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             sendJsonResponse(exchange, 405, errorJson("Method not allowed"));
             return;
         }
 
-        // 1. خواندن هدر Authorization و بررسی Token
+        // 1. Verify Authorization header
         String authHeader = exchange.getRequestHeaders().getFirst("Authorization");
         if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
             sendJsonResponse(exchange, 401, errorJson("Missing or invalid Authorization header"));
@@ -58,7 +57,7 @@ public class CreateNewRestaurantHandler implements HttpHandler {
             return;
         }
 
-        // 2. استخراج userId از Subject توکن
+        // 2. Extract user ID from token
         String sub = jwt.getSubject();
         if (sub == null) {
             sendJsonResponse(exchange, 401, errorJson("Invalid token payload"));
@@ -78,57 +77,87 @@ public class CreateNewRestaurantHandler implements HttpHandler {
             sendJsonResponse(exchange, 400, errorJson("Invalid user ID in token"));
             return;
         } catch (Exception e) {
+            e.printStackTrace();
             sendJsonResponse(exchange, 500, errorJson("Internal server error"));
             return;
         }
 
-        // 3. فقط SELLER اجازهٔ ایجاد رستوران دارد
         if (user.getRole() != Role.SELLER) {
             sendJsonResponse(exchange, 403, errorJson("Only sellers can create restaurants"));
             return;
         }
 
-        // 4. خواندن بدنهٔ JSON request
+        // 4. Parse request body
         try (InputStreamReader reader = new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8)) {
             Type type = new TypeToken<Map<String, Object>>() {}.getType();
             Map<String, Object> data = gson.fromJson(reader, type);
 
-            // بررسی فیلدهای ضروری
-            if (data == null
-                    || !data.containsKey("name")
-                    || !data.containsKey("address")
-                    || !data.containsKey("phone")) {
-                sendJsonResponse(exchange, 400, errorJson("Missing required fields"));
+            // Validate required fields
+            if (data == null) {
+                sendJsonResponse(exchange, 400, errorJson("Request body is empty"));
                 return;
             }
 
-            // ۵. ساخت شیءٔ Restaurant و مقداردهی فیلدها
+            // Check required fields
+            if (!data.containsKey("name") || !data.containsKey("address") || !data.containsKey("phone")) {
+                sendJsonResponse(exchange, 400, errorJson("Missing required fields: name, address, or phone"));
+                return;
+            }
+
+            // Validate field values
+            String name = (String) data.get("name");
+            String address = (String) data.get("address");
+            String phone = (String) data.get("phone");
+
+            if (name == null || name.trim().isEmpty() ||
+                    address == null || address.trim().isEmpty() ||
+                    phone == null || phone.trim().isEmpty()) {
+                sendJsonResponse(exchange, 400, errorJson("Name, address, and phone cannot be empty"));
+                return;
+            }
+
+            // 5. Create Restaurant object
             Restaurant restaurant = new Restaurant();
-            restaurant.setName((String) data.get("name"));
-            restaurant.setAddress((String) data.get("address"));
-            restaurant.setPhone((String) data.get("phone"));
-            // لوگو اختیاری است
-            if (data.containsKey("logoBase64")) {
+            restaurant.setName(name);
+            restaurant.setAddress(address);
+            restaurant.setPhone(phone);
+
+            // Set optional logo
+            if (data.containsKey("logoBase64") && data.get("logoBase64") != null) {
                 restaurant.setLogoBase64((String) data.get("logoBase64"));
             }
-            // tax_fee و additional_fee باید اعداد صحیح باشند
+
+            // Handle tax_fee and additional_fee with proper validation
             try {
-                int taxFee = ((Number) data.get("tax_fee")).intValue();
-                int addFee = ((Number) data.get("additional_fee")).intValue();
-                restaurant.setTax_fee(taxFee);
-                restaurant.setAdditional_fee(addFee);
-            } catch (ClassCastException cce) {
-                sendJsonResponse(exchange, 400, errorJson("Fields 'tax_fee' and 'additional_fee' must be integers"));
+                if (data.containsKey("tax_fee")) {
+                    Object taxFeeObj = data.get("tax_fee");
+                    int taxFee = taxFeeObj instanceof Number ? ((Number) taxFeeObj).intValue() :
+                            Integer.parseInt(taxFeeObj.toString());
+                    restaurant.setTax_fee(taxFee);
+                }
+
+                if (data.containsKey("additional_fee")) {
+                    Object addFeeObj = data.get("additional_fee");
+                    int addFee = addFeeObj instanceof Number ? ((Number) addFeeObj).intValue() :
+                            Integer.parseInt(addFeeObj.toString());
+                    restaurant.setAdditional_fee(addFee);
+                }
+            } catch (Exception e) {
+                sendJsonResponse(exchange, 400, errorJson("Fields 'tax_fee' and 'additional_fee' must be valid numbers"));
                 return;
             }
 
-            // ** مهم: قرار دادن مالک (owner) از نوع User **
+            // Set owner
             restaurant.setOwner(user);
 
-            // ۶. ذخیره در دیتابیس
-            restaurantRepository.save(restaurant);
-
-            sendJsonResponse(exchange, 201, gson.toJson(Collections.singletonMap("message", "Restaurant created successfully")));
+            // 6. Save to database
+            try {
+                restaurantRepository.save(restaurant);
+                sendJsonResponse(exchange, 201, gson.toJson(Collections.singletonMap("message", "Restaurant created successfully")));
+            } catch (Exception e) {
+                e.printStackTrace();
+                sendJsonResponse(exchange, 500, errorJson(e.getCause().getMessage()));
+            }
         } catch (Exception e) {
             e.printStackTrace();
             sendJsonResponse(exchange, 500, errorJson("Internal server error"));
