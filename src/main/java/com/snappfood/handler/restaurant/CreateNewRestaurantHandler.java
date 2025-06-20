@@ -41,7 +41,6 @@ public class CreateNewRestaurantHandler implements HttpHandler {
             return;
         }
 
-        // 1. Verify Authorization header
         String authHeader = exchange.getRequestHeaders().getFirst("Authorization");
         if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
             sendJsonResponse(exchange, 401, errorJson("Missing or invalid Authorization header"));
@@ -57,7 +56,6 @@ public class CreateNewRestaurantHandler implements HttpHandler {
             return;
         }
 
-        // 2. Extract user ID from token
         String sub = jwt.getSubject();
         if (sub == null) {
             sendJsonResponse(exchange, 401, errorJson("Invalid token payload"));
@@ -87,24 +85,20 @@ public class CreateNewRestaurantHandler implements HttpHandler {
             return;
         }
 
-        // 4. Parse request body
         try (InputStreamReader reader = new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8)) {
             Type type = new TypeToken<Map<String, Object>>() {}.getType();
             Map<String, Object> data = gson.fromJson(reader, type);
 
-            // Validate required fields
             if (data == null) {
                 sendJsonResponse(exchange, 400, errorJson("Request body is empty"));
                 return;
             }
 
-            // Check required fields
             if (!data.containsKey("name") || !data.containsKey("address") || !data.containsKey("phone")) {
                 sendJsonResponse(exchange, 400, errorJson("Missing required fields: name, address, or phone"));
                 return;
             }
 
-            // Validate field values
             String name = (String) data.get("name");
             String address = (String) data.get("address");
             String phone = (String) data.get("phone");
@@ -116,18 +110,15 @@ public class CreateNewRestaurantHandler implements HttpHandler {
                 return;
             }
 
-            // 5. Create Restaurant object
             Restaurant restaurant = new Restaurant();
             restaurant.setName(name);
             restaurant.setAddress(address);
             restaurant.setPhone(phone);
 
-            // Set optional logo
             if (data.containsKey("logoBase64") && data.get("logoBase64") != null) {
                 restaurant.setLogoBase64((String) data.get("logoBase64"));
             }
 
-            // Handle tax_fee and additional_fee with proper validation
             try {
                 if (data.containsKey("tax_fee")) {
                     Object taxFeeObj = data.get("tax_fee");
@@ -147,10 +138,8 @@ public class CreateNewRestaurantHandler implements HttpHandler {
                 return;
             }
 
-            // Set owner
             restaurant.setOwner(user);
 
-            // 6. Save to database
             try {
                 restaurantRepository.save(restaurant);
                 sendJsonResponse(exchange, 201, gson.toJson(Collections.singletonMap("message", "Restaurant created successfully")));
