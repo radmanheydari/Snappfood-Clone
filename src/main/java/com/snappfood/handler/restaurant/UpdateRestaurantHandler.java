@@ -42,106 +42,94 @@ public class UpdateRestaurantHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         if (!"PUT".equalsIgnoreCase(exchange.getRequestMethod())) {
-            sendResponse(exchange, 405, "Method not allowed");
+            sendJson(exchange, 405, errorJson("Method not allowed"));
             return;
         }
 
         try {
-            // 1. Authenticate user
-            User seller = authenticateUser(exchange);
+            // 1. احراز هویت
+            User seller = authenticateSeller(exchange);
             if (seller == null) return;
 
-            // 2. Verify restaurant exists and belongs to seller
-            Restaurant restaurant = validateRestaurantOwnership(seller);
+            // 2. بررسی مالکیت رستوران
+            Restaurant restaurant = validateOwnership(seller);
             if (restaurant == null) {
-                sendResponse(exchange, 404, "Restaurant not found");
+                sendJson(exchange, 403, errorJson("Unauthorized to update this restaurant"));
                 return;
             }
 
-            // 3. Parse and apply updates
-            Map<String, Object> updates = parseRequestBody(exchange);
-            applyUpdates(restaurant, updates);
+            // 3. خواندن داده‌ها
+            Map<String, Object> data = readRequestBody(exchange);
+            if (data == null) {
+                sendJson(exchange, 400, errorJson("Invalid JSON body"));
+                return;
+            }
 
-            // 4. Save changes
+            // 4. اعمال تغییرات
+            if (data.containsKey("name")) restaurant.setName((String) data.get("name"));
+            if (data.containsKey("address")) restaurant.setAddress((String) data.get("address"));
+            if (data.containsKey("phone")) restaurant.setPhone((String) data.get("phone"));
+            if (data.containsKey("logoBase64")) restaurant.setLogoBase64((String) data.get("logoBase64"));
+            if (data.containsKey("tax_fee") && data.get("tax_fee") instanceof Number)
+                restaurant.setTax_fee(((Number) data.get("tax_fee")).intValue());
+            if (data.containsKey("additional_fee") && data.get("additional_fee") instanceof Number)
+                restaurant.setAdditional_fee(((Number) data.get("additional_fee")).intValue());
+
+            // 5. ذخیره در دیتابیس
             restaurantRepository.update(restaurant);
-            sendResponse(exchange, 200, "Restaurant updated successfully");
 
+            sendJson(exchange, 200, gson.toJson(Collections.singletonMap("message", "Restaurant updated successfully")));
         } catch (Exception e) {
             e.printStackTrace();
-            sendResponse(exchange, 500, "Internal server error");
+            sendJson(exchange, 500, errorJson("Internal server error"));
         }
     }
 
-    private User authenticateUser(HttpExchange exchange) throws IOException {
+    private User authenticateSeller(HttpExchange exchange) throws IOException {
         String authHeader = exchange.getRequestHeaders().getFirst("Authorization");
         if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
-            sendResponse(exchange, 401, "Missing or invalid Authorization header");
+            sendJson(exchange, 401, errorJson("Missing or invalid Authorization header"));
             return null;
         }
 
         try {
             String token = authHeader.substring(BEARER_PREFIX.length()).trim();
             DecodedJWT jwt = verifier.verify(token);
-            String userId = jwt.getSubject();
+            long userId = Long.parseLong(jwt.getSubject());
 
-            Optional<User> user = userRepository.findById(Long.parseLong(userId));
-            if (user.isEmpty() || user.get().getRole() != Role.SELLER) {
-                sendResponse(exchange, 403, "Only sellers can update restaurants");
+            Optional<User> userOpt = userRepository.findById(userId);
+            if (userOpt.isEmpty() || userOpt.get().getRole() != Role.SELLER) {
+                sendJson(exchange, 403, errorJson("Only sellers can update restaurants"));
                 return null;
             }
-            return user.get();
+
+            return userOpt.get();
         } catch (JWTVerificationException e) {
-            sendResponse(exchange, 401, "Invalid or expired token");
+            sendJson(exchange, 401, errorJson("Invalid or expired token"));
             return null;
         } catch (NumberFormatException e) {
-            sendResponse(exchange, 400, "Invalid user ID in token");
+            sendJson(exchange, 400, errorJson("Invalid user ID in token"));
             return null;
         }
     }
 
-    private Restaurant validateRestaurantOwnership(User seller) {
-        Optional<Restaurant> restaurant = restaurantRepository.findById(restaurantId);
-        if (restaurant.isEmpty() || !restaurant.get().getOwner().getId().equals(seller.getId())) {
-            return null;
-        }
-        return restaurant.get();
+    private Restaurant validateOwnership(User seller) {
+        Optional<Restaurant> opt = restaurantRepository.findById(restaurantId);
+        return (opt.isPresent() && opt.get().getOwner().getId().equals(seller.getId())) ? opt.get() : null;
     }
 
-    private Map<String, Object> parseRequestBody(HttpExchange exchange) throws IOException {
+    private Map<String, Object> readRequestBody(HttpExchange exchange) throws IOException {
         try (InputStreamReader reader = new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8)) {
             Type type = new TypeToken<Map<String, Object>>() {}.getType();
             return gson.fromJson(reader, type);
         }
     }
 
-    private void applyUpdates(Restaurant restaurant, Map<String, Object> updates) {
-        if (updates == null) return;
-
-        if (updates.containsKey("name")) {
-            restaurant.setName((String) updates.get("name"));
-        }
-        if (updates.containsKey("address")) {
-            restaurant.setAddress((String) updates.get("address"));
-        }
-        if (updates.containsKey("phone")) {
-            restaurant.setPhone((String) updates.get("phone"));
-        }
-        if (updates.containsKey("logoBase64")) {
-            restaurant.setLogoBase64((String) updates.get("logoBase64"));
-        }
-        if (updates.containsKey("tax_fee") && updates.get("tax_fee") instanceof Number) {
-            restaurant.setTax_fee(((Number) updates.get("tax_fee")).intValue());
-        }
-        if (updates.containsKey("additional_fee") && updates.get("additional_fee") instanceof Number) {
-            restaurant.setAdditional_fee(((Number) updates.get("additional_fee")).intValue());
-        }
+    private String errorJson(String message) {
+        return gson.toJson(Collections.singletonMap("error", message));
     }
 
-    private void sendResponse(HttpExchange exchange, int statusCode, String message) throws IOException {
-        String json = gson.toJson(Collections.singletonMap(
-                statusCode >= 400 ? "error" : "message",
-                message
-        ));
+    private void sendJson(HttpExchange exchange, int statusCode, String json) throws IOException {
         byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type", APPLICATION_JSON);
         exchange.sendResponseHeaders(statusCode, bytes.length);
