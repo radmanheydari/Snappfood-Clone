@@ -80,6 +80,19 @@ public class Main {
                 }
             }
 
+            if (method.equalsIgnoreCase("DELETE") && path.matches("^/restaurants/\\d+/item/\\d+$")) {
+                try {
+                    String[] parts = path.split("/");
+                    long restaurantId = Long.parseLong(parts[2]);
+                    long itemId = Long.parseLong(parts[4]);
+                    new DeleteFoodItemHandler(restaurantId, itemId).handle(exchange);
+                    return;
+                } catch (NumberFormatException e) {
+                    sendJson(exchange, 400, "{\"error\":\"Invalid restaurant or item ID\"}");
+                    return;
+                }
+            }
+
             sendJson(exchange, 404, "{\"error\":\"Not found\"}");
         }
 
