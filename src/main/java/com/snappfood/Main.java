@@ -1,6 +1,7 @@
 package com.snappfood;
 
 import com.google.gson.Gson;
+import com.snappfood.handler.restaurant.AddFoodItemHandler;
 import com.snappfood.handler.restaurant.CreateNewRestaurantHandler;
 import com.snappfood.handler.restaurant.GetListOfSellersRestaurantHandler;
 import com.snappfood.handler.restaurant.UpdateRestaurantHandler;
@@ -21,39 +22,47 @@ public class Main {
     public static void main(String[] args) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
 
-        // User-related routes
         server.createContext("/auth/register", new RegisterHandler());
         server.createContext("/auth/login", new LoginHandler());
         server.createContext("/auth/profile", new CurrentUserHandler());
         server.createContext("/auth/logout", new LogoutHandler());
-
-        // Restaurant routes
         server.createContext("/restaurants", new RestaurantRouter());
-
+        server.createContext("/restaurants/mine", new GetListOfSellersRestaurantHandler());
         server.createContext("/restaurants/mine", new GetListOfSellersRestaurantHandler());
 
         server.start();
         System.out.println("Server running on port 8080");
     }
 
-    // Router for /restaurants and /restaurants/{id}
+    // for all /restaurant/...
     static class RestaurantRouter implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             String method = exchange.getRequestMethod();
-            String path = exchange.getRequestURI().getPath(); // e.g., /restaurants or /restaurants/1
+            String path = exchange.getRequestURI().getPath();
 
             if (path.equals("/restaurants") && method.equalsIgnoreCase("POST")) {
                 new CreateNewRestaurantHandler().handle(exchange);
                 return;
             }
 
-            // Handle PUT /restaurants/{id}
-            if (method.equalsIgnoreCase("PUT") && path.matches("^/restaurants/\\d+$")) {
+            if (method.equalsIgnoreCase("POST") && path.matches("^/restaurants/\\d+/item$")) {
                 try {
                     String[] parts = path.split("/");
                     long restaurantId = Long.parseLong(parts[2]);
-                    new UpdateRestaurantHandler(restaurantId).handle(exchange);
+                    new AddFoodItemHandler(restaurantId).handle(exchange);
+                    return;
+                } catch (NumberFormatException e) {
+                    sendJson(exchange, 400, "{\"error\":\"Invalid restaurant ID\"}");
+                    return;
+                }
+            }
+
+            if (method.equalsIgnoreCase("POST") && path.matches("^/restaurants/\\d+/foods$")) {
+                try {
+                    String[] parts = path.split("/");
+                    long restaurantId = Long.parseLong(parts[2]);
+                    new AddFoodItemHandler(restaurantId).handle(exchange);
                     return;
                 } catch (NumberFormatException e) {
                     sendJson(exchange, 400, "{\"error\":\"Invalid restaurant ID\"}");

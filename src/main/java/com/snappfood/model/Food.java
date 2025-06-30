@@ -40,6 +40,10 @@ public class Food {
     @Column(nullable = false)
     private List<String> keywords;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "restaurant_id", nullable = false)
+    private Restaurant restaurant;
+
     @ManyToOne
     @JoinColumn(name = "categoryId")
     private FoodCategory category;
