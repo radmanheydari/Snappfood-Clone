@@ -1,10 +1,7 @@
 package com.snappfood;
 
 import com.google.gson.Gson;
-import com.snappfood.handler.restaurant.AddFoodItemHandler;
-import com.snappfood.handler.restaurant.CreateNewRestaurantHandler;
-import com.snappfood.handler.restaurant.GetListOfSellersRestaurantHandler;
-import com.snappfood.handler.restaurant.UpdateRestaurantHandler;
+import com.snappfood.handler.restaurant.*;
 import com.snappfood.handler.user.CurrentUserHandler;
 import com.snappfood.handler.user.LoginHandler;
 import com.snappfood.handler.user.LogoutHandler;
@@ -66,6 +63,19 @@ public class Main {
                     return;
                 } catch (NumberFormatException e) {
                     sendJson(exchange, 400, "{\"error\":\"Invalid restaurant ID\"}");
+                    return;
+                }
+            }
+
+            if (method.equalsIgnoreCase("PUT") && path.matches("^/restaurants/\\d+/item/\\d+$")) {
+                try {
+                    String[] parts = path.split("/");
+                    long restaurantId = Long.parseLong(parts[2]);
+                    long itemId = Long.parseLong(parts[4]);
+                    new EditFoodItemHandler(restaurantId, itemId).handle(exchange);
+                    return;
+                } catch (NumberFormatException e) {
+                    sendJson(exchange, 400, "{\"error\":\"Invalid restaurant or item ID\"}");
                     return;
                 }
             }
