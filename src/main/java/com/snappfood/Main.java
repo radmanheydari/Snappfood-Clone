@@ -93,6 +93,18 @@ public class Main {
                 }
             }
 
+            if (method.equalsIgnoreCase("POST") && path.matches("^/restaurants/\\d+/menu$")) {
+                try {
+                    long restaurantId = Long.parseLong(path.split("/")[2]);
+                    new AddMenuHandler(restaurantId).handle(exchange);
+                    return;
+                } catch (NumberFormatException e) {
+                    sendJson(exchange, 400, "{\"error\":\"Invalid restaurant ID\"}");
+                    return;
+                }
+            }
+
+
             sendJson(exchange, 404, "{\"error\":\"Not found\"}");
         }
 

@@ -25,5 +25,6 @@
         <mapping class="com.snappfood.model.Order"/>
         <mapping class="com.snappfood.model.FoodCategory"/>
         <mapping class="com.snappfood.model.Order"/>
+        <mapping class="com.snappfood.model.Menu"/>
     </session-factory>
 </hibernate-configuration>
