@@ -104,6 +104,13 @@ public class Main {
                 }
             }
 
+            if (method.equalsIgnoreCase("DELETE") && path.matches("^/restaurants/\\d+/menu/\\d+$")) {
+                String[] parts = path.split("/");
+                long restaurantId = Long.parseLong(parts[2]);
+                long menuId = Long.parseLong(parts[4]);
+                new DeleteMenuHandler(restaurantId, menuId).handle(exchange);
+                return;
+            }
 
             sendJson(exchange, 404, "{\"error\":\"Not found\"}");
         }
