@@ -104,16 +104,25 @@ public class Main {
                 }
             }
 
-            if (method.equalsIgnoreCase("DELETE") && path.matches("^/restaurants/\\d+/menu/\\d+$")) {
+            if (method.equalsIgnoreCase("DELETE") && path.matches("^/restaurants/\\d+/menu/.+$")) {
                 String[] parts = path.split("/");
                 long restaurantId = Long.parseLong(parts[2]);
-                long menuId = Long.parseLong(parts[4]);
-                new DeleteMenuHandler(restaurantId, menuId).handle(exchange);
+                String title = parts[4];
+                new DeleteMenuHandler(restaurantId, title).handle(exchange);
+                return;
+            }
+
+            if (method.equals("PUT") && path.matches("^/restaurants/\\d+/menu/[^/]+$")) {
+                String[] parts = path.split("/");
+                long restaurantId = Long.parseLong(parts[2]);
+                String menuTitle = parts[4];
+                new AddItemToMenuHandler(restaurantId, menuTitle).handle(exchange);
                 return;
             }
 
             sendJson(exchange, 404, "{\"error\":\"Not found\"}");
         }
+
 
         private void sendJson(HttpExchange exchange, int statusCode, String json) throws IOException {
             byte[] bytes = json.getBytes(StandardCharsets.UTF_8);

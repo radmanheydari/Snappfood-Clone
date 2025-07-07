@@ -6,7 +6,10 @@ import javax.persistence.*;
 import java.util.List;
 
 @Entity
-@Table(name = "menus")
+@Table(
+        name = "menus",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"restaurant_id", "title"})
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,7 +19,7 @@ public class Menu {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String title;
 
     @ManyToOne

@@ -33,6 +33,23 @@ public class MenuRepository {
         }
     }
 
+    public Optional<Menu> findByTitleAndRestaurantId(String title, Long restaurantId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("FROM Menu WHERE title = :title AND restaurant.id = :restaurantId", Menu.class)
+                    .setParameter("title", title)
+                    .setParameter("restaurantId", restaurantId)
+                    .uniqueResultOptional();
+        }
+    }
+
+    public void update(Menu menu) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction tx = session.beginTransaction();
+            session.update(menu);
+            tx.commit();
+        }
+    }
+
     public void delete(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Transaction transaction = session.beginTransaction();

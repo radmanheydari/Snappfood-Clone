@@ -35,11 +35,11 @@ public class DeleteMenuHandler implements HttpHandler {
     private final MenuRepository menuRepository = new MenuRepository();
 
     private final long restaurantId;
-    private final long menuId;
+    private final String title;
 
-    public DeleteMenuHandler(long restaurantId, long menuId) {
+    public DeleteMenuHandler(long restaurantId, String title) {
         this.restaurantId = restaurantId;
-        this.menuId = menuId;
+        this.title = title;
     }
 
     @Override
@@ -53,31 +53,25 @@ public class DeleteMenuHandler implements HttpHandler {
             User seller = authenticateUser(exchange);
             if (seller == null) return;
 
-            Optional<Restaurant> optionalRestaurant = restaurantRepository.findById(restaurantId);
-            if (optionalRestaurant.isEmpty()) {
+            Optional<Restaurant> restaurantOpt = restaurantRepository.findById(restaurantId);
+            if (restaurantOpt.isEmpty()) {
                 sendResponse(exchange, 404, "Restaurant not found");
                 return;
             }
 
-            Restaurant restaurant = optionalRestaurant.get();
+            Restaurant restaurant = restaurantOpt.get();
             if (!restaurant.getOwner().getId().equals(seller.getId())) {
                 sendResponse(exchange, 403, "You are not the owner of this restaurant");
                 return;
             }
 
-            Optional<Menu> optionalMenu = menuRepository.findById(menuId);
-            if (optionalMenu.isEmpty()) {
-                sendResponse(exchange, 404, "Menu not found");
+            Optional<Menu> menuOpt = menuRepository.findByTitleAndRestaurantId(title, restaurantId);
+            if (menuOpt.isEmpty()) {
+                sendResponse(exchange, 404, "Menu with title '" + title + "' not found");
                 return;
             }
 
-            Menu menu = optionalMenu.get();
-            if (!menu.getRestaurant().getId().equals(restaurantId)) {
-                sendResponse(exchange, 400, "Menu does not belong to this restaurant");
-                return;
-            }
-
-            menuRepository.delete(menuId);
+            menuRepository.delete(menuOpt.get().getId());
             sendResponse(exchange, 200, "Menu deleted successfully");
 
         } catch (Exception e) {
