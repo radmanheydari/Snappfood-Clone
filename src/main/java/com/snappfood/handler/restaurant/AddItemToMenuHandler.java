@@ -10,9 +10,11 @@ import com.google.gson.reflect.TypeToken;
 import com.snappfood.Role;
 import com.snappfood.model.*;
 import com.snappfood.repository.*;
-
+import com.snappfood.util.HibernateUtil;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -48,9 +50,15 @@ public class AddItemToMenuHandler implements HttpHandler {
             return;
         }
 
+        Session session = null;
+        Transaction transaction = null;
+
         try {
             User seller = authenticate(exchange);
             if (seller == null) return;
+
+            session = HibernateUtil.getSessionFactory().openSession();
+            transaction = session.beginTransaction();
 
             Optional<Restaurant> restaurantOpt = restaurantRepository.findById(restaurantId);
             if (restaurantOpt.isEmpty() || !restaurantOpt.get().getOwner().getId().equals(seller.getId())) {
@@ -65,26 +73,42 @@ public class AddItemToMenuHandler implements HttpHandler {
             }
 
             long foodId = ((Number) body.get("item_id")).longValue();
-            Optional<Food> foodOpt = foodRepository.findById(foodId);
-            if (foodOpt.isEmpty()) {
+            Food food = session.get(Food.class, foodId);
+            if (food == null) {
                 sendJson(exchange, 404, Map.of("error", "Food item not found"));
                 return;
             }
 
-            Optional<Menu> menuOpt = menuRepository.findByTitleAndRestaurantId(menuTitle, restaurantId);
-            if (menuOpt.isEmpty()) {
-                sendJson(exchange, 404, Map.of("error", "Menu not found"));
-                return;
+            Menu menu = session.createQuery(
+                            "SELECT m FROM Menu m WHERE m.title = :title AND m.restaurant.id = :restaurantId", Menu.class)
+                    .setParameter("title", menuTitle)
+                    .setParameter("restaurantId", restaurantId)
+                    .uniqueResultOptional()
+                    .orElse(null);
+
+            if (menu == null) {
+                menu = new Menu();
+                menu.setTitle(menuTitle);
+                menu.setRestaurant(restaurantOpt.get());
+                session.persist(menu);
             }
 
-            Menu menu = menuOpt.get();
-            menu.getFoodItems().add(foodOpt.get());//FIXME : THERE IS SOMETHING WRONG WITH THIS! 500 INTERNAL ERROR
-            menuRepository.update(menu);
+            food.setMenu(menu);
+            session.persist(food);
 
+            if (menu.getFoodItems() == null) {
+                menu.setFoodItems(new ArrayList<>());
+            }
+            menu.getFoodItems().add(food);
+
+            transaction.commit();
             sendJson(exchange, 200, Map.of("message", "Item added to menu successfully"));
         } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
             e.printStackTrace();
-            sendJson(exchange, 500, Map.of("error", "Internal server error"));
+            sendJson(exchange, 500, Map.of("error", "Internal server error: " + e.getMessage()));
+        } finally {
+            if (session != null) session.close();
         }
     }
 
