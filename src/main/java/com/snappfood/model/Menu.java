@@ -26,7 +26,10 @@ public class Menu {
     @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;
 
-    @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "menu",
+            cascade = { CascadeType.PERSIST, CascadeType.MERGE },
+            orphanRemoval = false
+    )
     private List<Food> foodItems;
-
 }

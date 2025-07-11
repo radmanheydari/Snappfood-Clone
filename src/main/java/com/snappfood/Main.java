@@ -104,6 +104,16 @@ public class Main {
                 }
             }
 
+            //delete item from menu
+            if (method.equals("DELETE") && path.matches("^/restaurants/\\d+/menu/[^/]+/\\d+$")) {
+                String[] parts = path.split("/");
+                long restaurantId = Long.parseLong(parts[2]);
+                String menuTitle = parts[4];
+                long itemId = Long.parseLong(parts[5]);
+                new DeleteItemFromMenuHandler(restaurantId, menuTitle, itemId).handle(exchange);
+                return;
+            }
+
             if (method.equalsIgnoreCase("DELETE") && path.matches("^/restaurants/\\d+/menu/.+$")) {
                 String[] parts = path.split("/");
                 long restaurantId = Long.parseLong(parts[2]);

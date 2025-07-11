@@ -35,10 +35,12 @@ public class MenuRepository {
 
     public Optional<Menu> findByTitleAndRestaurantId(String title, Long restaurantId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("FROM Menu WHERE title = :title AND restaurant.id = :restaurantId", Menu.class)
+            String hql = "SELECT m FROM Menu m LEFT JOIN FETCH m.foodItems WHERE m.title = :title AND m.restaurant.id = :restaurantId";
+            Menu menu = session.createQuery(hql, Menu.class)
                     .setParameter("title", title)
                     .setParameter("restaurantId", restaurantId)
-                    .uniqueResultOptional();
+                    .uniqueResult();
+            return Optional.ofNullable(menu);
         }
     }
 
