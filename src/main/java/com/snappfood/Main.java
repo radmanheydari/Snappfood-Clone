@@ -1,6 +1,7 @@
 package com.snappfood;
 
 import com.google.gson.Gson;
+import com.snappfood.handler.buyer.GetVendorMenuHandler;
 import com.snappfood.handler.buyer.ListVendorsHandler;
 import com.snappfood.handler.restaurant.*;
 import com.snappfood.handler.user.CurrentUserHandler;
@@ -27,13 +28,12 @@ public class Main {
         server.createContext("/restaurants", new RestaurantRouter());
         server.createContext("/restaurants/mine", new GetListOfSellersRestaurantHandler());
         server.createContext("/restaurants/mine", new GetListOfSellersRestaurantHandler());
-        server.createContext("/vendors", new ListVendorsHandler());
+        server.createContext("/vendors", new VendorRouter());
 
         server.start();
         System.out.println("Server running on port 8080");
     }
 
-    // for all /restaurant/...
     static class RestaurantRouter implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
@@ -136,6 +136,34 @@ public class Main {
         }
 
 
+        private void sendJson(HttpExchange exchange, int statusCode, String json) throws IOException {
+            byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(statusCode, bytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(bytes);
+            }
+        }
+    }
+
+    static class VendorRouter implements HttpHandler{
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            String method = exchange.getRequestMethod();
+            String path = exchange.getRequestURI().getPath();
+
+            if (path.equals("/vendors") && method.equalsIgnoreCase("POST")) {
+                new ListVendorsHandler().handle(exchange);
+                return;
+            }
+
+            if ("GET".equalsIgnoreCase(method) && path.matches("^/vendors/\\d+")) {
+                new GetVendorMenuHandler().handle(exchange);
+                return;
+            }
+
+            sendJson(exchange, 404, "{\"error\":\"Not found\"}");
+        }
         private void sendJson(HttpExchange exchange, int statusCode, String json) throws IOException {
             byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().set("Content-Type", "application/json");

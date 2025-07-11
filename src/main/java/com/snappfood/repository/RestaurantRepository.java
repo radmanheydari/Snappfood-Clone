@@ -67,6 +67,15 @@ public class RestaurantRepository {
         }
     }
 
+    public List<Restaurant> findByOwnerId(Long ownerId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                            "FROM Restaurant r WHERE r.owner.id = :oid", Restaurant.class)
+                    .setParameter("oid", ownerId)
+                    .list();
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public List<Restaurant> findAll(String nameFilter, String addressFilter, String phoneFilter) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

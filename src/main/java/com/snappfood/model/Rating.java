@@ -22,7 +22,7 @@ public class Rating {
     private String comment;
 
     @Column
-    private String imageBase64;//FIXME : IN DOC ITS ARRAY OF STRINGS!
+    private String imageBase64;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

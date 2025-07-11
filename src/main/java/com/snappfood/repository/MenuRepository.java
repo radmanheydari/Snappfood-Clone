@@ -6,6 +6,7 @@ import com.snappfood.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
+import java.util.List;
 import java.util.Optional;
 
 public class MenuRepository {
@@ -62,4 +63,14 @@ public class MenuRepository {
             transaction.commit();
         }
     }
+
+    public List<Menu> findAllByRestaurantId(Long restaurantId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                            "FROM Menu m LEFT JOIN FETCH m.foodItems WHERE m.restaurant.id = :rid", Menu.class)
+                    .setParameter("rid", restaurantId)
+                    .list();
+        }
+    }
+
 }
