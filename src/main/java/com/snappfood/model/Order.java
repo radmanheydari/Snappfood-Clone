@@ -1,30 +1,65 @@
+// com/snappfood/model/Order.java
 package com.snappfood.model;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
+import java.time.OffsetDateTime;
+import java.util.List;
 
 @Entity
+@Table(name = "orders")
 @Data
+@NoArgsConstructor
 public class Order {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
-    private Long orderId;
+    @Column(name = "delivery_address", nullable = false)
+    private String deliveryAddress;
 
-    @Column(name = "delivery_address")
-    private String delivery_address;
+    @ManyToOne @JoinColumn(name = "customer_id", nullable = false)
+    private User customer;
 
-    @Column(name = "vendor_id")
-    private int vendor_id;
+    @ManyToOne @JoinColumn(name = "vendor_id", nullable = false)
+    private User vendor;
 
-    @Column(name = "coupon_id")
-    private int coupon_id;
+    @ManyToOne @JoinColumn(name = "coupon_id")
+    private Coupon coupon;
 
-    //TODO : ITEMS( ITEM_ID, QUANTITY )
+    @ElementCollection
+    @CollectionTable(
+            name = "order_items",
+            joinColumns = @JoinColumn(name = "order_id")
+    )
+    @Column(name = "food_id", nullable = false)
+    private List<Long> itemIds;
 
-    @ManyToOne
-    @JoinColumn(name = "courier_id")
+    @Column(name = "raw_price", nullable = false)
+    private int rawPrice;
+
+    @Column(name = "tax_fee", nullable = false)
+    private int taxFee;
+
+    @Column(name = "additional_fee", nullable = false)
+    private int additionalFee;
+
+    @Column(name = "courier_fee", nullable = false)
+    private int courierFee;
+
+    @Column(name = "pay_price", nullable = false)
+    private int payPrice;
+
+    @ManyToOne @JoinColumn(name = "courier_id")
     private User courier;
+
+    @Column(nullable = false)
+    private String status;
+
+    @Column(name = "created_at", nullable = false)
+    private OffsetDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
 }
