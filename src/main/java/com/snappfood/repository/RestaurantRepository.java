@@ -5,6 +5,7 @@ import com.snappfood.model.User;
 import com.snappfood.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
 import java.util.Collections;
 import java.util.List;
@@ -63,6 +64,33 @@ public class RestaurantRepository {
                 session.delete(restaurant);
             }
             transaction.commit();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Restaurant> findAll(String nameFilter, String addressFilter, String phoneFilter) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            StringBuilder hql = new StringBuilder("FROM Restaurant r WHERE 1=1");
+            if (nameFilter != null && !nameFilter.isBlank()) {
+                hql.append(" AND lower(r.name) LIKE :name");
+            }
+            if (addressFilter != null && !addressFilter.isBlank()) {
+                hql.append(" AND lower(r.address) LIKE :addr");
+            }
+            if (phoneFilter != null && !phoneFilter.isBlank()) {
+                hql.append(" AND r.phone LIKE :phone");
+            }
+            Query<Restaurant> q = session.createQuery(hql.toString(), Restaurant.class);
+            if (nameFilter != null && !nameFilter.isBlank()) {
+                q.setParameter("name", "%" + nameFilter.toLowerCase() + "%");
+            }
+            if (addressFilter != null && !addressFilter.isBlank()) {
+                q.setParameter("addr", "%" + addressFilter.toLowerCase() + "%");
+            }
+            if (phoneFilter != null && !phoneFilter.isBlank()) {
+                q.setParameter("phone", "%" + phoneFilter + "%");
+            }
+            return q.list();
         }
     }
 }
