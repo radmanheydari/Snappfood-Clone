@@ -1,9 +1,11 @@
 package com.snappfood;
 
 import com.google.gson.Gson;;
+import com.snappfood.handler.buyer.GetItemDetailsHandler;
 import com.snappfood.handler.buyer.GetVendorMenuHandler;
 import com.snappfood.handler.buyer.ListItemHandler;
 import com.snappfood.handler.buyer.ListVendorsHandler;
+import com.snappfood.handler.coupon.CheckCouponHandler;
 import com.snappfood.handler.restaurant.*;
 import com.snappfood.handler.user.CurrentUserHandler;
 import com.snappfood.handler.user.LoginHandler;
@@ -30,7 +32,8 @@ public class Main {
         server.createContext("/restaurants/mine", new GetListOfSellersRestaurantHandler());
         server.createContext("/restaurants/mine", new GetListOfSellersRestaurantHandler());
         server.createContext("/vendors", new VendorRouter());
-        server.createContext("/items", new ListItemHandler());
+        server.createContext("/items", new ItemsRouter());
+        server.createContext("/coupons", new CheckCouponHandler());
 
 
         server.start();
@@ -174,6 +177,26 @@ public class Main {
             try (OutputStream os = exchange.getResponseBody()) {
                 os.write(bytes);
             }
+        }
+    }
+
+    static class ItemsRouter implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            String path   = exchange.getRequestURI().getPath();
+            String method = exchange.getRequestMethod();
+
+            if ("/items".equals(path) && "POST".equalsIgnoreCase(method)) {
+                new ListItemHandler().handle(exchange);
+                return;
+            }
+
+            if (path.matches("^/items/\\d+$") && "GET".equalsIgnoreCase(method)) {
+                new GetItemDetailsHandler().handle(exchange);
+                return;
+            }
+
+            exchange.sendResponseHeaders(404, -1);
         }
     }
 }

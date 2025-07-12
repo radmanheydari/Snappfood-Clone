@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 public class ListItemHandler implements HttpHandler {
     private static final String APPLICATION_JSON = "application/json";
-    private final Gson          gson = new Gson();
+    private final Gson gson = new Gson();
     private final FoodRepository repo = new FoodRepository();
 
     @Override
