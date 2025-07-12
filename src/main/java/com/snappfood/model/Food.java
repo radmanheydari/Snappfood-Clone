@@ -32,7 +32,7 @@ public class Food {
     @Column(nullable = false)
     private int supply;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             name = "keywords",
             joinColumns = @JoinColumn(name = "food_id")

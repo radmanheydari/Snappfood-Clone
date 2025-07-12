@@ -1,6 +1,6 @@
 package com.snappfood;
 
-import com.google.gson.Gson;
+import com.google.gson.Gson;;
 import com.snappfood.handler.buyer.GetVendorMenuHandler;
 import com.snappfood.handler.buyer.ListVendorsHandler;
 import com.snappfood.handler.restaurant.*;
