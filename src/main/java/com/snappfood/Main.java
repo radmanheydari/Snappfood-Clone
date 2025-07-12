@@ -2,6 +2,7 @@ package com.snappfood;
 
 import com.google.gson.Gson;;
 import com.snappfood.handler.buyer.GetVendorMenuHandler;
+import com.snappfood.handler.buyer.ListItemHandler;
 import com.snappfood.handler.buyer.ListVendorsHandler;
 import com.snappfood.handler.restaurant.*;
 import com.snappfood.handler.user.CurrentUserHandler;
@@ -29,6 +30,8 @@ public class Main {
         server.createContext("/restaurants/mine", new GetListOfSellersRestaurantHandler());
         server.createContext("/restaurants/mine", new GetListOfSellersRestaurantHandler());
         server.createContext("/vendors", new VendorRouter());
+        server.createContext("/items", new ListItemHandler());
+
 
         server.start();
         System.out.println("Server running on port 8080");
