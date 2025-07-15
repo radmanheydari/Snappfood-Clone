@@ -1,11 +1,7 @@
 package com.snappfood;
 
 import com.google.gson.Gson;;
-import com.snappfood.handler.buyer.GetItemDetailsHandler;
-import com.snappfood.handler.buyer.GetVendorMenuHandler;
-import com.snappfood.handler.buyer.ListItemHandler;
-import com.snappfood.handler.buyer.ListVendorsHandler;
-import com.snappfood.handler.coupon.CheckCouponHandler;
+import com.snappfood.handler.buyer.*;
 import com.snappfood.handler.restaurant.*;
 import com.snappfood.handler.user.CurrentUserHandler;
 import com.snappfood.handler.user.LoginHandler;
@@ -34,6 +30,7 @@ public class Main {
         server.createContext("/vendors", new VendorRouter());
         server.createContext("/items", new ItemsRouter());
         server.createContext("/coupons", new CheckCouponHandler());
+        server.createContext("/orders", new OrderRouter());
 
 
         server.start();
@@ -193,6 +190,27 @@ public class Main {
 
             if (path.matches("^/items/\\d+$") && "GET".equalsIgnoreCase(method)) {
                 new GetItemDetailsHandler().handle(exchange);
+                return;
+            }
+
+            exchange.sendResponseHeaders(404, -1);
+        }
+    }
+
+    static class OrderRouter implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            String path   = exchange.getRequestURI().getPath();
+            String method = exchange.getRequestMethod();
+
+            if ("/orders".equals(path) && "POST".equalsIgnoreCase(method)) {
+                new SubmitOrderHandler().handle(exchange);
+                return;
+            }
+
+            if (path.matches("^/orders/\\d+$") && "GET".equalsIgnoreCase(method)) {
+                long id = Long.parseLong(path.split("/")[2]);
+                new GetOrderDetailHandler(id).handle(exchange);
                 return;
             }
 

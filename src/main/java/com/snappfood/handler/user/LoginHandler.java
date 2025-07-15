@@ -32,18 +32,15 @@ public class LoginHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         try {
-            // تنها POST پذیرفته می‌شود
             if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
                 sendRawResponse(exchange, 405, "{\"error\":\"Method not allowed\"}");
                 return;
             }
 
-            // 1. خواندن JSON از بدنه‌ی درخواست
             InputStreamReader reader = new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8);
             Type mapType = new TypeToken<Map<String, String>>() {}.getType();
             Map<String, String> userData = gson.fromJson(reader, mapType);
 
-            // اگر JSON خالی یا نامعتبر است، Bad Request می‌دهیم
             if (userData == null) {
                 sendRawResponse(exchange, 400, "{\"error\":\"Request body is missing or invalid JSON\"}");
                 return;
@@ -52,13 +49,11 @@ public class LoginHandler implements HttpHandler {
             String phone = userData.get("phone");
             String password = userData.get("password");
 
-            // چک کردن فیلدهای ضروری
             if (phone == null || password == null) {
                 sendRawResponse(exchange, 400, "{\"error\":\"Both 'phone' and 'password' fields are required\"}");
                 return;
             }
 
-            // 2. پیدا کردن کاربر با شماره تلفن
             Optional<User> optionalUser = userRepository.findByPhone(phone);
             if (optionalUser.isEmpty()) {
                 sendRawResponse(exchange, 401, "{\"error\":\"Invalid credentials\"}");
@@ -67,16 +62,11 @@ public class LoginHandler implements HttpHandler {
 
             User user = optionalUser.get();
 
-            // 3. بررسی درست بودن پسورد
-            // اگر پسورد در دیتابیس هش نشده، به این شکل مستقیم مقایسه کنید:
             if (!user.getPassword().equals(password)) {
                 sendRawResponse(exchange, 401, "{\"error\":\"Invalid credentials\"}");
                 return;
             }
-            // اگر پسورد در DB هش شده است، از BCrypt (یا الگوریتم مناسب) استفاده کنید:
-            // if (!BCrypt.checkpw(password, user.getPassword())) { ... }
 
-            // 4. ساختن JWT
             Date now = new Date();
             Date expiresAt = new Date(now.getTime() + EXPIRATION_MS);
             String token = JWT.create()
@@ -86,7 +76,6 @@ public class LoginHandler implements HttpHandler {
                     .withExpiresAt(expiresAt)
                     .sign(algorithm);
 
-            // 5. آماده‌سازی DTO برای پاسخ
             UserData dtoUser = new UserData(user);
             LoginDTO responseDto = new LoginDTO(
                     "user logged in successfully",
@@ -96,17 +85,14 @@ public class LoginHandler implements HttpHandler {
 
             String jsonResponse = gson.toJson(responseDto);
 
-            // ارسال پاسخ 200
             sendJsonResponse(exchange, 200, jsonResponse);
 
         } catch (Exception e) {
-            // اگر هر استثنائی رخ داد، آن را چاپ کرده و 500 برمی‌گردانیم
             e.printStackTrace();
             sendRawResponse(exchange, 500, "{\"error\":\"Internal server error\"}");
         }
     }
 
-    // ارسال پاسخ JSON (200 یا هر کد دیگر) با هدر Content-Type مناسب
     private void sendJsonResponse(HttpExchange exchange, int statusCode, String json) throws IOException {
         byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type", APPLICATION_JSON + "; charset=UTF-8");

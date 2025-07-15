@@ -21,7 +21,19 @@ public class OrderRepository {
 
     public Optional<Order> findById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return Optional.ofNullable(session.get(Order.class, id));
+            Order order = session.createQuery(
+                            "SELECT o FROM Order o " +
+                                    "LEFT JOIN FETCH o.items " +
+                                    "LEFT JOIN FETCH o.customer " +
+                                    "LEFT JOIN FETCH o.vendor " +
+                                    "LEFT JOIN FETCH o.coupon " +
+                                    "LEFT JOIN FETCH o.courier " +
+                                    "WHERE o.id = :id",
+                            Order.class
+                    )
+                    .setParameter("id", id)
+                    .uniqueResult();
+            return Optional.ofNullable(order);
         }
     }
 

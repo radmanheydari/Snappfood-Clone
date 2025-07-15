@@ -7,6 +7,12 @@ import org.hibernate.Session;
 import java.util.Optional;
 
 public class CouponRepository {
+    public Optional<Coupon> findById(long id) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return Optional.ofNullable(session.get(Coupon.class, id));
+        }
+    }
+
     public Optional<Coupon> findByCode(String code) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery(
