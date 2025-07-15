@@ -214,6 +214,12 @@ public class Main {
                 return;
             }
 
+            if ("/orders/history".equals(exchange.getRequestURI().getPath())
+                    && "GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+                new GetOrderHistoryHandler().handle(exchange);
+                return;
+            }
+
             exchange.sendResponseHeaders(404, -1);
         }
     }

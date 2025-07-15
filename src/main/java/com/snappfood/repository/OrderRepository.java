@@ -45,6 +45,24 @@ public class OrderRepository {
     }
 
     @SuppressWarnings("unchecked")
+    public List<Order> findByCustomerId(Long customerId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                            "SELECT DISTINCT o FROM Order o " +
+                                    "LEFT JOIN FETCH o.items " +
+                                    "LEFT JOIN FETCH o.vendor " +
+                                    "LEFT JOIN FETCH o.coupon " +
+                                    "LEFT JOIN FETCH o.courier " +
+                                    "WHERE o.customer.id = :cid " +
+                                    "ORDER BY o.createdAt DESC",
+                            Order.class
+                    )
+                    .setParameter("cid", customerId)
+                    .list();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
     public List<Order> findByRestaurantId(Long restaurantId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery(
