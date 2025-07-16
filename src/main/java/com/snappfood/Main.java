@@ -236,6 +236,12 @@ public class Main {
                 return;
             }
 
+            if ("DELETE".equalsIgnoreCase(method) && path.matches("^/favorites/\\d+$")) {
+                long rid = Long.parseLong(path.split("/")[2]);
+                new RemoveFromFavoritesHandler(rid).handle(exchange);
+                return;
+            }
+
             if ("GET".equalsIgnoreCase(method) && "/favorites".equals(path)) {
                 new GetFavoritesHandler().handle(exchange);
                 return;

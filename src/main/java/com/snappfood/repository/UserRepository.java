@@ -146,4 +146,23 @@ public class UserRepository {
             return Optional.of(list.get(0));
         }
     }
+
+    public void removeRestaurantFromFavorites(Long userId, Long restaurantId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction tx = session.beginTransaction();
+
+            User user = session.get(User.class, userId);
+            if (user == null) {
+                throw new IllegalArgumentException("User not found");
+            }
+
+            Restaurant rest = session.get(Restaurant.class, restaurantId);
+            if (rest == null) {
+                throw new IllegalArgumentException("Restaurant not found");
+            }
+
+            user.getFavoriteRestaurants().remove(rest);
+            tx.commit();
+        }
+    }
 }
