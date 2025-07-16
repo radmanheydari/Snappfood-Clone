@@ -31,7 +31,7 @@ public class Main {
         server.createContext("/items", new ItemsRouter());
         server.createContext("/coupons", new CheckCouponHandler());
         server.createContext("/orders", new OrderRouter());
-
+        server.createContext("/favorites", new FavoriteHandler());
 
         server.start();
         System.out.println("Server running on port 8080");
@@ -217,6 +217,27 @@ public class Main {
             if ("/orders/history".equals(exchange.getRequestURI().getPath())
                     && "GET".equalsIgnoreCase(exchange.getRequestMethod())) {
                 new GetOrderHistoryHandler().handle(exchange);
+                return;
+            }
+
+            exchange.sendResponseHeaders(404, -1);
+        }
+    }
+
+    static class FavoriteHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            String path   = exchange.getRequestURI().getPath();
+            String method = exchange.getRequestMethod();
+
+            if ("PUT".equalsIgnoreCase(method) && path.matches("^/favorites/\\d+$")) {
+                long restId = Long.parseLong(path.split("/")[2]);
+                new AddRestaurantToFavoritesHandler(restId).handle(exchange);
+                return;
+            }
+
+            if ("GET".equalsIgnoreCase(method) && "/favorites".equals(path)) {
+                new GetFavoritesHandler().handle(exchange);
                 return;
             }
 

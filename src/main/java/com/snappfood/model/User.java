@@ -5,6 +5,7 @@ import com.snappfood.Role;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -50,10 +51,10 @@ public class User {
     @ManyToMany
     @JoinTable(
             name = "user_favorite_restaurants",
-            joinColumns = @JoinColumn(name = "userId"),
-            inverseJoinColumns = @JoinColumn(name = "restaurantId")
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "restaurant_id")
     )
-    private Set<Restaurant> favoriteRestaurants;
+    private Set<Restaurant> favoriteRestaurants = new HashSet<>();
 
 //    @Embedded
 //    private Order delivery;//for non couriers it'll always be null

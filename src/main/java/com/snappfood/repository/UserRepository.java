@@ -1,5 +1,6 @@
 package com.snappfood.repository;
 
+import com.snappfood.model.Restaurant;
 import com.snappfood.model.User;
 import com.snappfood.util.HibernateUtil;
 import org.hibernate.Session;
@@ -10,7 +11,6 @@ import java.util.Optional;
 
 public class UserRepository {
 
-    // ذخیره کاربر جدید یا به‌روزرسانی کاربر موجود
     public User save(User user) {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -26,7 +26,15 @@ public class UserRepository {
         }
     }
 
-    // یافتن کاربر بر اساس ID
+    public User update(User user) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction tx = session.beginTransaction();
+            session.update(user);
+            tx.commit();
+            return user;
+        }
+    }
+
     public Optional<User> findById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             User user = session.get(User.class, id);
@@ -36,7 +44,6 @@ public class UserRepository {
         }
     }
 
-    // بررسی وجود ایمیل
     public boolean existsByEmail(String email) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<Long> query = session.createQuery(
@@ -48,7 +55,6 @@ public class UserRepository {
         }
     }
 
-    // بررسی وجود شماره تلفن
     public boolean existsByPhone(String phone) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<Long> query = session.createQuery(
@@ -60,7 +66,6 @@ public class UserRepository {
         }
     }
 
-    // یافتن کاربر بر اساس ایمیل
     public Optional<User> findByEmail(String email) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<User> query = session.createQuery(
@@ -72,7 +77,6 @@ public class UserRepository {
         }
     }
 
-    // یافتن کاربر بر اساس شماره تلفن
     public Optional<User> findByPhone(String phone) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Query<User> query = session.createQuery(
@@ -84,7 +88,6 @@ public class UserRepository {
         }
     }
 
-    // دریافت تمام کاربران
     public List<User> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery("FROM User", User.class).list();
@@ -93,7 +96,6 @@ public class UserRepository {
         }
     }
 
-    // حذف کاربر
     public void delete(Long id) {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -108,6 +110,40 @@ public class UserRepository {
                 transaction.rollback();
             }
             throw new RuntimeException("Error deleting user", e);
+        }
+    }
+
+    public void addRestaurantToFavorites(Long userId, Long restaurantId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction tx = session.beginTransaction();
+
+            User user = session.get(User.class, userId);
+            if (user == null) {
+                throw new IllegalArgumentException("User not found");
+            }
+            Restaurant rest = session.get(Restaurant.class, restaurantId);
+            if (rest == null) {
+                throw new IllegalArgumentException("Restaurant not found");
+            }
+
+            user.getFavoriteRestaurants().add(rest);
+            session.update(user);
+
+            tx.commit();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public Optional<User> findWithFavorites(Long userId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            List<User> list = session.createQuery(
+                            "SELECT u FROM User u " +
+                                    "LEFT JOIN FETCH u.favoriteRestaurants fav " +
+                                    "WHERE u.id = :uid", User.class)
+                    .setParameter("uid", userId)
+                    .list();
+            if (list.isEmpty()) return Optional.empty();
+            return Optional.of(list.get(0));
         }
     }
 }
