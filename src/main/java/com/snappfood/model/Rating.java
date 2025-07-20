@@ -29,8 +29,8 @@ public class Rating {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "order_id", nullable = false)
-    private Order order;
+    @JoinColumn(name = "food_id", nullable = false)
+    private Food food;
 
     @Column(nullable = false)
     private LocalDateTime date;
