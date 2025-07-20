@@ -183,11 +183,16 @@ public class Main {
             String path   = exchange.getRequestURI().getPath();
             String method = exchange.getRequestMethod();
 
-            //rating
             if (path.matches("^/items/\\d+/ratings$") && "POST".equalsIgnoreCase(method)) {
                 new SubmitRatingHandler().handle(exchange);
                 return;
             }
+
+            if (path.matches("^/items/\\d+/ratings$") && "GET".equalsIgnoreCase(method)) {
+                new GetRatingsForItemHandler().handle(exchange);
+                return;
+            }
+
 
             if ("/items".equals(path) && "POST".equalsIgnoreCase(method)) {
                 new ListItemHandler().handle(exchange);

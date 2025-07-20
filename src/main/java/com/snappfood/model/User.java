@@ -48,7 +48,7 @@ public class User {
 
     //TODO : ORDER HISTORY
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_favorite_restaurants",
             joinColumns = @JoinColumn(name = "user_id"),
