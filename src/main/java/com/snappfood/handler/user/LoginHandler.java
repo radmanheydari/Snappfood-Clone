@@ -72,6 +72,7 @@ public class LoginHandler implements HttpHandler {
             String token = JWT.create()
                     .withSubject(String.valueOf(user.getId()))
                     .withClaim("role", user.getRole().toString())
+                    .withClaim("phone", user.getPhone())
                     .withIssuedAt(now)
                     .withExpiresAt(expiresAt)
                     .sign(algorithm);

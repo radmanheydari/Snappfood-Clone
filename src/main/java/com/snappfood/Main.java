@@ -1,6 +1,7 @@
 package com.snappfood;
 
 import com.google.gson.Gson;;
+import com.snappfood.handler.admin.ListAllUsers;
 import com.snappfood.handler.buyer.*;
 import com.snappfood.handler.restaurant.*;
 import com.snappfood.handler.user.CurrentUserHandler;
@@ -32,6 +33,7 @@ public class Main {
         server.createContext("/coupons", new CheckCouponHandler());
         server.createContext("/orders", new OrderRouter());
         server.createContext("/favorites", new FavoriteHandler());
+        server.createContext("/admin/users", new ListAllUsers());
 
         server.start();
         System.out.println("Server running on port 8080");
