@@ -11,11 +11,14 @@ import java.util.Optional;
 
 public class MenuRepository {
 
-    public Optional<Menu> findByRestaurantId(Long restaurantId) {
+    public List<Menu> findByRestaurantId(long restaurantId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("FROM Menu m WHERE m.restaurant.id = :restaurantId", Menu.class)
-                    .setParameter("restaurantId", restaurantId)
-                    .uniqueResultOptional();
+            return session.createQuery(
+                            "SELECT m FROM Menu m " +
+                                    "JOIN FETCH m.foodItems f " +
+                                    "WHERE m.restaurant.id = :rid", Menu.class)
+                    .setParameter("rid", restaurantId)
+                    .list();
         }
     }
 

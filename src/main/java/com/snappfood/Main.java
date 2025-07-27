@@ -4,6 +4,7 @@ import com.google.gson.Gson;;
 import com.snappfood.handler.admin.ListAllUsers;
 import com.snappfood.handler.admin.ViewAllOrdersHandler;
 import com.snappfood.handler.buyer.*;
+import com.snappfood.handler.courier.ChangeDeliveryStatusHandler;
 import com.snappfood.handler.courier.GetAvailableDeliveryRequestsHandler;
 import com.snappfood.handler.restaurant.*;
 import com.snappfood.handler.user.CurrentUserHandler;
@@ -37,6 +38,7 @@ public class Main {
         server.createContext("/favorites", new FavoriteHandler());
         server.createContext("/admin/users", new ListAllUsers());
         server.createContext("/admin/orders", new ViewAllOrdersHandler());
+        server.createContext("/deliveries", new DeliveryRouter());
 
         server.start();
         System.out.println("Server running on port 8080");
@@ -166,7 +168,7 @@ public class Main {
         }
     }
 
-    static class VendorRouter implements HttpHandler{
+    static class VendorRouter implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             String method = exchange.getRequestMethod();
@@ -184,6 +186,7 @@ public class Main {
 
             sendJson(exchange, 404, "{\"error\":\"Not found\"}");
         }
+
         private void sendJson(HttpExchange exchange, int statusCode, String json) throws IOException {
             byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().set("Content-Type", "application/json");
@@ -197,7 +200,7 @@ public class Main {
     static class ItemsRouter implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path   = exchange.getRequestURI().getPath();
+            String path = exchange.getRequestURI().getPath();
             String method = exchange.getRequestMethod();
 
             if (path.matches("^/items/\\d+/ratings$") && "POST".equalsIgnoreCase(method)) {
@@ -228,7 +231,7 @@ public class Main {
     static class OrderRouter implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path   = exchange.getRequestURI().getPath();
+            String path = exchange.getRequestURI().getPath();
             String method = exchange.getRequestMethod();
 
             if ("/orders".equals(path) && "POST".equalsIgnoreCase(method)) {
@@ -248,6 +251,13 @@ public class Main {
                 return;
             }
 
+            if ("/orders/history".equals(exchange.getRequestURI().getPath())
+                    && "PATCH".equalsIgnoreCase(exchange.getRequestMethod())) {
+                new GetAvailableDeliveryRequestsHandler().handle(exchange);
+                return;
+            }
+
+
             exchange.sendResponseHeaders(404, -1);
         }
     }
@@ -255,7 +265,7 @@ public class Main {
     static class FavoriteHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            String path   = exchange.getRequestURI().getPath();
+            String path = exchange.getRequestURI().getPath();
             String method = exchange.getRequestMethod();
 
             if ("PUT".equalsIgnoreCase(method) && path.matches("^/favorites/\\d+$")) {
@@ -276,6 +286,32 @@ public class Main {
             }
 
             exchange.sendResponseHeaders(404, -1);
+        }
+    }
+
+    static class DeliveryRouter implements HttpHandler {
+        private final ChangeDeliveryStatusHandler updateHandler = new ChangeDeliveryStatusHandler();
+
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            String method = exchange.getRequestMethod();
+            String path = exchange.getRequestURI().getPath();
+
+            String[] parts = path.split("/");
+            if (parts.length == 3 && "deliveries".equals(parts[1]) && "PATCH".equalsIgnoreCase(method)) {
+                try {
+                    updateHandler.handle(exchange);
+                } catch (Exception e) {
+                    byte[] bytes = ("{\"error\":\"Internal server error\"}").getBytes(StandardCharsets.UTF_8);
+                    exchange.getResponseHeaders().set("Content-Type", "application/json");
+                    exchange.sendResponseHeaders(500, bytes.length);
+                    try (OutputStream os = exchange.getResponseBody()) {
+                        os.write(bytes);
+                    }
+                }
+            } else {
+                exchange.sendResponseHeaders(404, -1);
+            }
         }
     }
 }

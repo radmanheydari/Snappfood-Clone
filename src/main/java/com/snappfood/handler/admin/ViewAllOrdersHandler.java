@@ -2,84 +2,74 @@ package com.snappfood.handler.admin;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import com.google.gson.Gson;
 import com.snappfood.model.Order;
+import com.snappfood.model.User;
 import com.snappfood.repository.OrderRepository;
+import com.snappfood.repository.UserRepository;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class ViewAllOrdersHandler implements HttpHandler {
     private static final String APPLICATION_JSON = "application/json";
-    private static final String SECRET = "YOUR_SECRET_KEY";
-    private static final String BEARER_PREFIX = "Bearer ";
+    private static final String SECRET           = "YOUR_SECRET_KEY";
+    private static final String BEARER_PREFIX    = "Bearer ";
 
     private final Gson gson = new Gson();
-    private final OrderRepository orderRepo = new OrderRepository();
     private final JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SECRET)).build();
+    private final UserRepository userRepo = new UserRepository();
+    private final OrderRepository orderRepo = new OrderRepository();
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        int status;
-        Object responseBody;
+    public void handle(HttpExchange exchange) {
         try {
             if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
-                status = 405;
-                responseBody = Map.of("error", "Method not allowed");
-                sendResponse(exchange, status, responseBody);
+                send(exchange, 405, Map.of("error", "Method not allowed"));
                 return;
             }
 
             String auth = exchange.getRequestHeaders().getFirst("Authorization");
             if (auth == null || !auth.startsWith(BEARER_PREFIX)) {
-                status = 401;
-                responseBody = Map.of("error", "Missing Authorization header");
-                sendResponse(exchange, status, responseBody);
+                send(exchange, 401, Map.of("error", "Missing or invalid Authorization header"));
                 return;
             }
 
-            DecodedJWT jwt;
-            try {
-                jwt = verifier.verify(auth.substring(BEARER_PREFIX.length()).trim());
-            } catch (Exception e) {
-                status = 401;
-                responseBody = Map.of("error", "Invalid or expired token");
-                sendResponse(exchange, status, responseBody);
+            var token = auth.substring(BEARER_PREFIX.length()).trim();
+            var jwt = verifier.verify(token);
+            long userId = Long.parseLong(jwt.getSubject());
+            Optional<User> uopt = userRepo.findById(userId);
+            if (uopt.isEmpty() || !"admin".equals(uopt.get().getPhone())) {
+                send(exchange, 403, Map.of("error", "Forbidden"));
                 return;
             }
 
-            String phone = jwt.getClaim("phone").asString();
-            if (!"admin".equals(phone)) {
-                status = 403;
-                responseBody = Map.of("error", "Admin only");
-                sendResponse(exchange, status, responseBody);
-                return;
-            }
-
+            // fetch all orders
             List<Order> orders = orderRepo.findAll();
-            status = 200;
-            responseBody = orders;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            status = 500;
-            responseBody = Map.of("error", "Internal server error");
+            send(exchange, 200, orders);
+
+        } catch (com.auth0.jwt.exceptions.JWTVerificationException e) {
+            send(exchange, 401, Map.of("error", "Invalid or expired token"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            send(exchange, 500, Map.of("error", "Internal server error"));
         }
-        sendResponse(exchange, status, responseBody);
     }
 
-    private void sendResponse(HttpExchange exchange, int statusCode, Object body) throws IOException {
-        byte[] json = gson.toJson(body).getBytes(StandardCharsets.UTF_8);
-        exchange.getResponseHeaders().set("Content-Type", APPLICATION_JSON + "; charset=UTF-8");
-        exchange.sendResponseHeaders(statusCode, json.length);
-        try (OutputStream os = exchange.getResponseBody()) {
-            os.write(json);
-        }
+    private void send(HttpExchange ex, int status, Object body) {
+        try {
+            byte[] bytes = gson.toJson(body).getBytes(StandardCharsets.UTF_8);
+            ex.getResponseHeaders().set("Content-Type", APPLICATION_JSON + "; charset=UTF-8");
+            ex.sendResponseHeaders(status, bytes.length);
+            try (OutputStream os = ex.getResponseBody()) {
+                os.write(bytes);
+            }
+        } catch (Exception ignore) {}
     }
 }
