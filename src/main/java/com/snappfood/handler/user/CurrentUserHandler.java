@@ -34,13 +34,11 @@ public class CurrentUserHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod().toUpperCase();
-        // Only allow GET
         if (!"GET".equalsIgnoreCase(exchange.getRequestMethod()) && !"PUT".equalsIgnoreCase(exchange.getRequestMethod())) {
             sendJsonResponse(exchange, 405, errorJson("Method not allowed"));
             return;
         }
 
-        // Read Authorization header
         String auth = exchange.getRequestHeaders().getFirst("Authorization");
         if (auth == null || !auth.startsWith(BEARER_PREFIX)) {
             sendJsonResponse(exchange, 401, errorJson("Missing or invalid Authorization header"));
@@ -56,7 +54,6 @@ public class CurrentUserHandler implements HttpHandler {
             return;
         }
 
-        // Extract user id
         String sub = jwt.getSubject();
         if (sub == null) {
             sendJsonResponse(exchange, 401, errorJson("Invalid token payload"));
@@ -138,7 +135,6 @@ public class CurrentUserHandler implements HttpHandler {
                 }
             }
 
-            // Save updated user
             userRepository.save(user);
             sendJsonResponse(exchange, 200, "{\"message\":\"Profile updated successfully\"}");
         } catch (Exception e) {

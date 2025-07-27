@@ -15,7 +15,7 @@ import java.util.Optional;
 
 public class GetItemDetailsHandler implements HttpHandler {
     private static final String APPLICATION_JSON = "application/json";
-    private final Gson          gson = new Gson();
+    private final Gson gson = new Gson();
     private final FoodRepository repo = new FoodRepository();
 
     @Override
@@ -48,7 +48,6 @@ public class GetItemDetailsHandler implements HttpHandler {
             return;
         }
 
-        // Build DTO and respond
         ItemDTO dto = new ItemDTO(opt.get());
         sendJson(exchange, 200, dto);
     }

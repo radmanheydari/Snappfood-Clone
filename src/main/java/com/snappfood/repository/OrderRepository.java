@@ -72,6 +72,21 @@ public class OrderRepository {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    public List<Order> findAvailableForDelivery() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                            "SELECT DISTINCT o FROM Order o " +
+                                    "LEFT JOIN FETCH o.items " +
+                                    "LEFT JOIN FETCH o.customer " +
+                                    "LEFT JOIN FETCH o.vendor " +
+                                    "WHERE o.status = 'submitted' " +
+                                    "ORDER BY o.createdAt DESC",
+                            Order.class)
+                    .list();
+        }
+    }
+
     public Order update(Order order) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Transaction tx = session.beginTransaction();

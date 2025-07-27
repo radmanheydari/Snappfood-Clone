@@ -34,13 +34,13 @@ public class GetListOfSellersRestaurantHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        // Only GET method is accepted
+
         if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
             sendJsonResponse(exchange, 405, errorJson("Method not allowed"));
             return;
         }
 
-        // 1. Read Authorization header and validate token
+
         String authHeader = exchange.getRequestHeaders().getFirst("Authorization");
         if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
             sendJsonResponse(exchange, 401, errorJson("Missing or invalid Authorization header"));
@@ -56,7 +56,7 @@ public class GetListOfSellersRestaurantHandler implements HttpHandler {
             return;
         }
 
-        // 2. Extract user ID from token subject
+
         String sub = jwt.getSubject();
         if (sub == null) {
             sendJsonResponse(exchange, 401, errorJson("Invalid token payload"));
@@ -81,17 +81,17 @@ public class GetListOfSellersRestaurantHandler implements HttpHandler {
             return;
         }
 
-        // 3. Only SELLER can access their restaurant list
+
         if (user.getRole() != Role.SELLER) {
             sendJsonResponse(exchange, 403, errorJson("Only sellers can access their restaurant list"));
             return;
         }
 
-        // 4. Fetch restaurants owned by this seller
+
         try {
             List<Restaurant> restaurants = restaurantRepository.findByOwner(user);
 
-            // Convert to DTO to avoid circular references and excessive data
+
             List<RestaurantDTO> restaurantDTOs = restaurants.stream()
                     .map(RestaurantDTO::new)
                     .collect(Collectors.toList());
@@ -103,7 +103,7 @@ public class GetListOfSellersRestaurantHandler implements HttpHandler {
         }
     }
 
-    // DTO to avoid exposing unnecessary data and prevent circular references
+
     private static class RestaurantDTO {
         private final Long id;
         private final String name;
@@ -123,7 +123,7 @@ public class GetListOfSellersRestaurantHandler implements HttpHandler {
             this.additional_fee = restaurant.getAdditional_fee();
         }
 
-        // Getters
+
         public Long getId() { return id; }
         public String getName() { return name; }
         public String getAddress() { return address; }

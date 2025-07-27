@@ -20,10 +20,10 @@ import java.util.stream.Collectors;
 
 public class GetVendorMenuHandler implements HttpHandler {
     private static final String APPLICATION_JSON = "application/json";
-    private final Gson               gson        = new Gson();
-    private final UserRepository     userRepo    = new UserRepository();
-    private final RestaurantRepository restRepo   = new RestaurantRepository();
-    private final MenuRepository     menuRepo    = new MenuRepository();
+    private final Gson gson = new Gson();
+    private final UserRepository userRepo = new UserRepository();
+    private final RestaurantRepository restRepo = new RestaurantRepository();
+    private final MenuRepository menuRepo = new MenuRepository();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -39,7 +39,6 @@ public class GetVendorMenuHandler implements HttpHandler {
                 return;
             }
 
-            // Parse vendorId from path /vendors/{vendorId}
             String[] parts = exchange.getRequestURI().getPath().split("/");
             if (parts.length != 3) {
                 status   = 400;
@@ -63,10 +62,8 @@ public class GetVendorMenuHandler implements HttpHandler {
                 return;
             }
 
-            // Fetch restaurants owned by this vendor
             List<Restaurant> owned = restRepo.findByOwnerId(vendorId);
 
-            // Gather all menus (eagerly load items)
             List<Menu> menus = owned.stream()
                     .flatMap(r -> menuRepo.findAllByRestaurantId(r.getId()).stream())
                     .collect(Collectors.toList());

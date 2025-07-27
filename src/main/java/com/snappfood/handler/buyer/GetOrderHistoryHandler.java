@@ -93,7 +93,6 @@ public class GetOrderHistoryHandler implements HttpHandler {
                     .getBytes(StandardCharsets.UTF_8);
         }
 
-        // send response
         exchange.sendResponseHeaders(status, responseBytes.length);
         try (OutputStream os = exchange.getResponseBody()) {
             os.write(responseBytes);

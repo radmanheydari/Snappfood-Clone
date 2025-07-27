@@ -62,7 +62,7 @@ public class Order {
     private User courier;
 
     @Column(nullable = false)
-    private String status;  // e.g. "submitted", "on the way", etc.
+    private String status;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

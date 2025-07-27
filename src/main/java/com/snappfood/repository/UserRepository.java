@@ -20,6 +20,7 @@ public class UserRepository {
             return user;
         } catch (Exception e) {
             if (transaction != null) {
+                System.out.println(e.getMessage());
                 transaction.rollback();
             }
             throw new RuntimeException("Error saving user", e);

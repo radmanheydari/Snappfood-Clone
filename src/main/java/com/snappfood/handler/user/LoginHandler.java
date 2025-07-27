@@ -22,8 +22,8 @@ import java.util.Optional;
 
 public class LoginHandler implements HttpHandler {
     private static final String APPLICATION_JSON = "application/json";
-    private static final String SECRET = "YOUR_SECRET_KEY"; // ← حتماً یک مقدار قوی قرار دهید
-    private static final long   EXPIRATION_MS = 1000L * 60 * 60; // 1 ساعت
+    private static final String SECRET = "YOUR_SECRET_KEY";
+    private static final long   EXPIRATION_MS = 1000L * 60 * 60;
 
     private final Gson gson = new Gson();
     private final UserRepository userRepository = new UserRepository();
@@ -103,7 +103,6 @@ public class LoginHandler implements HttpHandler {
         }
     }
 
-    // ارسال یک متن ساده (غالباً JSON خطا) بدون header Content-Type پیچیده
     private void sendRawResponse(HttpExchange exchange, int statusCode, String message) throws IOException {
         byte[] bytes = message.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type", APPLICATION_JSON + "; charset=UTF-8");

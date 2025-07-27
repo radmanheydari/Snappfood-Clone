@@ -2,7 +2,9 @@ package com.snappfood;
 
 import com.google.gson.Gson;;
 import com.snappfood.handler.admin.ListAllUsers;
+import com.snappfood.handler.admin.ViewAllOrdersHandler;
 import com.snappfood.handler.buyer.*;
+import com.snappfood.handler.courier.GetAvailableDeliveryRequestsHandler;
 import com.snappfood.handler.restaurant.*;
 import com.snappfood.handler.user.CurrentUserHandler;
 import com.snappfood.handler.user.LoginHandler;
@@ -25,15 +27,16 @@ public class Main {
         server.createContext("/auth/login", new LoginHandler());
         server.createContext("/auth/profile", new CurrentUserHandler());
         server.createContext("/auth/logout", new LogoutHandler());
+        server.createContext("/restaurants/mine", new GetListOfSellersRestaurantHandler());
+        server.createContext("/restaurants/mine", new GetListOfSellersRestaurantHandler());
         server.createContext("/restaurants", new RestaurantRouter());
-        server.createContext("/restaurants/mine", new GetListOfSellersRestaurantHandler());
-        server.createContext("/restaurants/mine", new GetListOfSellersRestaurantHandler());
         server.createContext("/vendors", new VendorRouter());
         server.createContext("/items", new ItemsRouter());
         server.createContext("/coupons", new CheckCouponHandler());
         server.createContext("/orders", new OrderRouter());
         server.createContext("/favorites", new FavoriteHandler());
         server.createContext("/admin/users", new ListAllUsers());
+        server.createContext("/admin/orders", new ViewAllOrdersHandler());
 
         server.start();
         System.out.println("Server running on port 8080");
@@ -55,6 +58,18 @@ public class Main {
                     String[] parts = path.split("/");
                     long restaurantId = Long.parseLong(parts[2]);
                     new AddFoodItemHandler(restaurantId).handle(exchange);
+                    return;
+                } catch (NumberFormatException e) {
+                    sendJson(exchange, 400, "{\"error\":\"Invalid restaurant ID\"}");
+                    return;
+                }
+            }
+
+            if (method.equalsIgnoreCase("PUT") && path.matches("^/restaurants/\\d+$")) {
+                try {
+                    String[] parts = path.split("/");
+                    long restaurantId = Long.parseLong(parts[2]);
+                    new UpdateRestaurantHandler(restaurantId).handle(exchange);
                     return;
                 } catch (NumberFormatException e) {
                     sendJson(exchange, 400, "{\"error\":\"Invalid restaurant ID\"}");
@@ -229,7 +244,7 @@ public class Main {
 
             if ("/orders/history".equals(exchange.getRequestURI().getPath())
                     && "GET".equalsIgnoreCase(exchange.getRequestMethod())) {
-                new GetOrderHistoryHandler().handle(exchange);
+                new GetAvailableDeliveryRequestsHandler().handle(exchange);
                 return;
             }
 
