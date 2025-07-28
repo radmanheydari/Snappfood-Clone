@@ -11,6 +11,7 @@ import com.snappfood.handler.user.CurrentUserHandler;
 import com.snappfood.handler.user.LoginHandler;
 import com.snappfood.handler.user.LogoutHandler;
 import com.snappfood.handler.user.RegisterHandler;
+import com.snappfood.handler.admin.CreateCouponHandler;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -38,6 +39,7 @@ public class Main {
         server.createContext("/favorites", new FavoriteHandler());
         server.createContext("/admin/users", new ListAllUsers());
         server.createContext("/admin/orders", new ViewAllOrdersHandler());
+        server.createContext("/admin/coupons", new CreateCouponHandler());
         server.createContext("/deliveries", new DeliveryRouter());
 
         server.start();

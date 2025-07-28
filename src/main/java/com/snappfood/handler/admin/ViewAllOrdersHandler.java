@@ -19,8 +19,8 @@ import java.util.Optional;
 
 public class ViewAllOrdersHandler implements HttpHandler {
     private static final String APPLICATION_JSON = "application/json";
-    private static final String SECRET           = "YOUR_SECRET_KEY";
-    private static final String BEARER_PREFIX    = "Bearer ";
+    private static final String SECRET = "YOUR_SECRET_KEY";
+    private static final String BEARER_PREFIX = "Bearer ";
 
     private final Gson gson = new Gson();
     private final JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SECRET)).build();
@@ -50,7 +50,6 @@ public class ViewAllOrdersHandler implements HttpHandler {
                 return;
             }
 
-            // fetch all orders
             List<Order> orders = orderRepo.findAll();
             send(exchange, 200, orders);
 

@@ -18,7 +18,7 @@ public class Coupon {
     @Column(nullable = false, unique = true)
     private String coupon_code;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = false)
     private String type;
 
     @Column(name = "value", nullable = false)
