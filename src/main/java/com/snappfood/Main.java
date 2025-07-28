@@ -12,6 +12,7 @@ import com.snappfood.handler.user.LoginHandler;
 import com.snappfood.handler.user.LogoutHandler;
 import com.snappfood.handler.user.RegisterHandler;
 import com.snappfood.handler.admin.CreateCouponHandler;
+import com.snappfood.handler.order.OnlinePaymentHandler;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -41,6 +42,8 @@ public class Main {
         server.createContext("/admin/orders", new ViewAllOrdersHandler());
         server.createContext("/admin/coupons", new CreateCouponHandler());
         server.createContext("/deliveries", new DeliveryRouter());
+        server.createContext("/payment/online", new OnlinePaymentHandler());
+
 
         server.start();
         System.out.println("Server running on port 8080");
