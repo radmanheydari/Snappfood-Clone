@@ -5,10 +5,10 @@
 <hibernate-configuration>
     <session-factory>
         <!-- تنظیمات اتصال به دیتابیس -->
-        <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
-        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/snappfood</property>
-        <property name="hibernate.connection.username">root</property>
-        <property name="hibernate.connection.password">Radman1385</property>
+        <property name="hibernate.connection.driver_class">YOUR_DRIVER</property>
+        <property name="hibernate.connection.url">YOUR_URL</property>
+        <property name="hibernate.connection.username">YOUR_USERNAME</property>
+        <property name="hibernate.connection.password">YOUR_PASSWORD</property>
 
         <!-- تنظیمات دیالکت و نمایش SQL -->
         <property name="hibernate.dialect">org.hibernate.dialect.MySQL8Dialect</property>
